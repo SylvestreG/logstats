@@ -7,14 +7,14 @@
 
 class Core {
 public:
-  explicit Core(cfl::Config const &cfg);
+  explicit Core(std::shared_ptr<cfl::Config> cfg);
   Core() = delete;
   ~Core() = default;
   Core(Core const &) = delete;
   Core &operator=(Core const &) = delete;
 
 private:
-  cfl::Config const &_config;
+  std::shared_ptr<cfl::Config> _config;
   std::thread _producers;
   boost::asio::thread_pool _consumers;
 };

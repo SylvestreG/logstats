@@ -4,4 +4,4 @@
 
 #include "core.h"
 
-Core::Core(const cfl::Config &cfg) : _config(cfg) {}
+Core::Core(std::shared_ptr<cfl::Config> cfg) : _config(cfg) {}
