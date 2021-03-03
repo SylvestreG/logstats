@@ -11,6 +11,7 @@ TEST(config, defaultVal) {
   ASSERT_EQ(cfg.debugEnabled(), true);
   ASSERT_EQ(cfg.refreshTimeMs(), 10s);
   ASSERT_EQ(cfg.consumerThreadsNumber(), 4);
+  ASSERT_EQ(cfg.bufferSizeBytes(), 4096);
 }
 
 TEST(config, fileDoesNotExist) {
@@ -28,7 +29,8 @@ TEST(config, goodConfig) {
   "consumerThreadsNumber": 1,
   "debugEnabled": false,
   "refreshTimeMs": 1,
-  "alertThresholdNumber" : 1
+  "alertThresholdNumber" : 1,
+  "bufferSizeBytes": 1
 }
 )foo";
   ofs.close();
@@ -41,6 +43,7 @@ TEST(config, goodConfig) {
   ASSERT_EQ(cfg.batchMaxSizeNumber(), 1);
   ASSERT_EQ(cfg.debugEnabled(), false);
   ASSERT_EQ(cfg.consumerThreadsNumber(), 1);
+  ASSERT_EQ(cfg.bufferSizeBytes(), 1);
   ASSERT_EQ(cfg.refreshTimeMs().count(), (1ms).count());
   ASSERT_EQ(cfg.batchMaxTime().count(), (1ms).count());
 }

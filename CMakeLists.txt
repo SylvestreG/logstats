@@ -10,15 +10,16 @@ if (CMAKE_BUILD_TYPE STREQUAL "")
 endif(CMAKE_BUILD_TYPE STREQUAL "")
 
 include(cmake/conan.cmake)
-conan_cmake_run(REQUIRES	bison/3.7.1
-							boost/1.75.0
-							flex/2.6.4
-							gtest/1.10.0
-							lyra/1.5.1
-							nlohmann_json/3.9.1
-							spdlog/1.7.0
+conan_cmake_run(REQUIRES			bison/3.7.1
+						boost/1.75.0
+						flex/2.6.4
+						gtest/1.10.0
+						libevent/2.1.12
+						lyra/1.5.1
+						nlohmann_json/3.9.1
+						spdlog/1.7.0
 				OPTIONS		spdlog:header_only=True
-							boost:header_only=True
+						boost:header_only=True
 				BASIC_SETUP	CMAKE_TARGETS
 				BUILD		missing)
 

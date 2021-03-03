@@ -1,11 +1,12 @@
-#include "config.h"
-#include "core.h"
 #include <lyra/lyra.hpp>
 #include <spdlog/spdlog.h>
 
+#include "config.h"
+#include "core.h"
+
 int main(int argc, char **argv) {
-  std::string confFile;
-  std::string inputFile;
+  std::filesystem::path confFile;
+  std::filesystem::path inputFile;
 
   auto cli = lyra::cli() |
              lyra::opt(confFile, "conf")["-c"]["--conf"]("config file") |
@@ -19,6 +20,13 @@ int main(int argc, char **argv) {
 
   if (inputFile.empty()) {
     spdlog::error("usage : ./clfMonitor logfile.log [-c config.json]");
+    return EXIT_FAILURE;
+  }
+
+  if (!std::filesystem::exists(inputFile) ||
+      !std::filesystem::is_regular_file(inputFile)) {
+    spdlog::error("no such file {}", inputFile.string());
+    return EXIT_FAILURE;
   }
 
   try {
@@ -28,9 +36,10 @@ int main(int argc, char **argv) {
     else
       cfg = std::make_shared<cfl::Config>(confFile);
 
-    Core c(cfg);
-  } catch (...) {
-    spdlog::error("leaving ...");
+    Core c(cfg, inputFile);
+    c.run();
+  } catch (std::exception const &ex) {
+    spdlog::error("leaving ... err={}", ex.what());
   }
 
   return EXIT_SUCCESS;

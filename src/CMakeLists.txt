@@ -8,7 +8,7 @@ add_library(logLib  ${CMAKE_CURRENT_SOURCE_DIR}/config.cpp
                     ${CMAKE_CURRENT_SOURCE_DIR}/core.cpp
                     ${CMAKE_CURRENT_SOURCE_DIR}/parser.cpp ${BISON_cflParser_OUTPUTS} ${FLEX_cflParser_OUTPUTS})
 target_include_directories(logLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(logLib PUBLIC CONAN_PKG::boost CONAN_PKG::spdlog CONAN_PKG::nlohmann_json CONAN_PKG::lyra)
+target_link_libraries(logLib PUBLIC CONAN_PKG::boost CONAN_PKG::libevent CONAN_PKG::spdlog CONAN_PKG::nlohmann_json CONAN_PKG::lyra)
 
-add_executable(logParser main.cpp)
-target_link_libraries(logParser PRIVATE logLib)
+add_executable(clfMonitor main.cpp)
+target_link_libraries(clfMonitor PRIVATE logLib)

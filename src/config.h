@@ -23,6 +23,7 @@ public:
   [[nodiscard]] bool debugEnabled() const noexcept;
   [[nodiscard]] std::chrono::milliseconds refreshTimeMs() const noexcept;
   [[nodiscard]] uint16_t alertThresholdNumber() const noexcept;
+  [[nodiscard]] uint16_t bufferSizeBytes() const noexcept;
 
 private:
   uint16_t _batchMaxSizeNumber{100};
@@ -31,6 +32,7 @@ private:
   bool _debugEnabled{true};
   std::chrono::milliseconds _refreshTimeMs{10s};
   uint16_t _alertThresholdNumber{10};
+  uint16_t _bufferSizeBytes{4096};
 };
 
 };     // namespace cfl
