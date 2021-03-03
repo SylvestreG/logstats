@@ -1,0 +1,8 @@
+{
+  "batchMaxSizeNumber": 100,
+  "batchMaxTimeMs": 100,
+  "consumerThreadsNumber": 4,
+  "debugEnabled": true,
+  "refreshTimeMs": 10000,
+  "alertThresholdNumber" : 10
+}

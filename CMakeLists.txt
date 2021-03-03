@@ -15,10 +15,12 @@ conan_cmake_run(REQUIRES	bison/3.7.1
 							flex/2.6.4
 							spdlog/1.7.0
 							gtest/1.10.0
+							nlohmann_json/3.9.1
 				OPTIONS		spdlog:header_only=True
 							boost:header_only=True
 				BASIC_SETUP	CMAKE_TARGETS
 				BUILD		missing)
+
 
 add_subdirectory(src)
 add_subdirectory(tests)
