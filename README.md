@@ -2,6 +2,22 @@
 
 # configuration
 
+You can configure clfMonitor using a json parser. 
+The code use nlohmann_json to parse and access to json data.
+
+Here is a configurationExample : 
+
+```json
+{
+  "batchMaxSizeNumber": 100,
+  "batchMaxTimeMs": 100,
+  "consumerThreadsNumber": 4,
+  "debugEnabled": true,
+  "refreshTimeMs": 10000,
+  "alertThresholdNumber" : 10
+}
+```
+
 # architecture
 
 ## parsing
