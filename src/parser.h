@@ -5,11 +5,17 @@
 #include <memory>
 #include <optional>
 #include <string_view>
+#include <variant>
 
 #include "http.h"
 
 using namespace std;
 using namespace std::chrono;
+
+namespace clf {
+
+using address =
+    std::variant<uint32_t, std::tuple<uint64_t, uint64_t>, string_view>;
 
 struct ClfLine {
   optional<string_view> ipAddr;
@@ -41,5 +47,6 @@ public:
 private:
   ClfLine _currentLine;
 };
+} // namespace clf
 
 #endif /* __PARSER_H__ */

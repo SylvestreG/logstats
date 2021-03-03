@@ -8,21 +8,21 @@
 
 TEST(parser, invalidLineTooShort) {
   auto result =
-      parser().parseLine("- - - - - -");
+      clf::parser().parseLine("- - - - - -");
 
   ASSERT_FALSE(result);
 }
 
 TEST(parser, invalidLineTooLong) {
   auto result =
-      parser().parseLine("- - - - - - - -");
+      clf::parser().parseLine("- - - - - - - -");
 
   ASSERT_FALSE(result);
 }
 
 TEST(parser, emptyLine) {
   auto result =
-      parser().parseLine("- - - - - - -");
+      clf::parser().parseLine("- - - - - - -");
 
   ASSERT_TRUE(result);
   ASSERT_FALSE(result->ipAddr);
@@ -35,7 +35,7 @@ TEST(parser, emptyLine) {
 
 TEST(parser, simpleLineIpv4) {
   auto result =
-      parser().parseLine("127.0.0.1 - frank [10/Oct/2000:13:55:36 "
+      clf::parser().parseLine("127.0.0.1 - frank [10/Oct/2000:13:55:36 "
                   "-0700] \"GET /apache_pb.gif HTTP/1.0\" 200 2326");
 
   ASSERT_TRUE(result);
@@ -43,7 +43,7 @@ TEST(parser, simpleLineIpv4) {
 
 TEST(parser, simpleLineIpv6) {
   auto result =
-      parser().parseLine("cafe:dede:dead:beef:1337:4242:1010:aaac - frank [10/Oct/2000:13:55:36 "
+      clf::parser().parseLine("cafe:dede:dead:beef:1337:4242:1010:aaac - frank [10/Oct/2000:13:55:36 "
                   "-0700] \"GET /apache_pb.gif HTTP/1.0\" 200 2326");
 
   ASSERT_TRUE(result);
@@ -51,7 +51,7 @@ TEST(parser, simpleLineIpv6) {
 
 TEST(parser, badIp) {
   auto result =
-      parser().parseLine("datadog.com - frank [10/Oct/2000:13:55:36 "
+      clf::parser().parseLine("datadog.com - frank [10/Oct/2000:13:55:36 "
                   "-0700] \"GET /apache_pb.gif HTTP/1.0\" 200 2326");
 
   ASSERT_TRUE(result);
