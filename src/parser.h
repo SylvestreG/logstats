@@ -36,6 +36,7 @@ public:
   void onTimeStamp(std::string_view) noexcept;
   void onRequest(std::string_view) noexcept;
   void onObjectSize(std::string_view) noexcept;
+  void onParseDone() noexcept;
 
 private:
   ClfLine _currentLine;

@@ -33,6 +33,7 @@ std::shared_ptr<spdlog::logger> parserLogger = spdlog::stderr_color_mt("parser")
 %token T_HTTP_MKACTIVITY T_HTTP_CHECKOUT T_HTTP_MERGE T_HTTP_MSEARCH T_HTTP_NOTIFY T_HTTP_SUBSCRIBE
 %token T_HTTP_UNSUBSCRIBE T_HTTP_PATCH T_HTTP_URGE T_HTTP_MKCALENDAR T_HTTP_LINK T_HTTP_UNLINK
 %token T_HTTP_1_0 T_HTTP_1_1
+%token T_NEW_LINE T_EOF
 %start main_rule
 
 %%
@@ -42,7 +43,10 @@ main_rule:
 	;
 
 cfl_rule:
-	| ip userIdentifier userId timestamp request error_code size { parserLogger->info("parse succeed"); }
+	| ip userIdentifier userId timestamp request error_code size T_NEW_LINE { parserLogger->info("parse succeed"); }
+	| ip userIdentifier userId timestamp request error_code size T_EOF { parserLogger->info("parse succeed"); }
+	| ip userIdentifier userId timestamp request error_code size T_SPACE T_NEW_LINE { parserLogger->info("parse succeed"); }
+	| ip userIdentifier userId timestamp request error_code size T_SPACE T_EOF { parserLogger->info("parse succeed"); }
 	;
 
 ip:
@@ -69,22 +73,26 @@ userId:
 	;
 
 timestamp:
-	T_OPEN_TAB T_DIGIT T_SLASH T_ALPHA T_SLASH T_DIGIT T_COLON T_DIGIT T_COLON T_DIGIT T_COLON T_DIGIT T_SPACE T_PLUS T_DIGIT T_CLOSE_TAB T_SPACE { parserLogger->info("TIME"); }
+	T_DASH T_SPACE { parserLogger->info("timestamp"); }
+	| T_OPEN_TAB T_DIGIT T_SLASH T_ALPHA T_SLASH T_DIGIT T_COLON T_DIGIT T_COLON T_DIGIT T_COLON T_DIGIT T_SPACE T_PLUS T_DIGIT T_CLOSE_TAB T_SPACE { parserLogger->info("TIME"); }
 	| T_OPEN_TAB T_DIGIT T_SLASH T_ALPHA T_SLASH T_DIGIT T_COLON T_DIGIT T_COLON T_DIGIT T_COLON T_DIGIT T_SPACE T_DASH T_DIGIT T_CLOSE_TAB T_SPACE { parserLogger->info("TIME"); }
 	| error T_SPACE  { parserLogger->info("bad timestamp"); }
 	;
 
 request:
-	http_request_type pathList T_HTTP_1_0 T_SPACE {parserLogger->info("request");}
+	T_DASH T_SPACE { parserLogger->info("request"); }
+	| http_request_type pathList T_HTTP_1_0 T_SPACE {parserLogger->info("request");}
 	| http_request_type pathList T_HTTP_1_1 T_SPACE {parserLogger->info("request");}
 	;
 
 
 error_code:
-	T_DIGIT T_SPACE { parserLogger->info("error_code");};
+	T_DASH T_SPACE { parserLogger->info("error_code"); }
+	| T_DIGIT T_SPACE { parserLogger->info("error_code");};
 
 size:
-	T_DIGIT { parserLogger->info("size");};
+	T_DASH { parserLogger->info("size"); }
+	| T_DIGIT { parserLogger->info("size");};
 
 hex:
 	T_ALPHANUM

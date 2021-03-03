@@ -17,6 +17,8 @@ std::shared_ptr<spdlog::logger> lexerLogger =
 %option stack
 %option case-insensitive
 
+%x IN_EOF
+
 %%
 
 \.                          {lexerLogger->warn("T_DOT"); return T_DOT; }
@@ -62,9 +64,12 @@ std::shared_ptr<spdlog::logger> lexerLogger =
 \"MKCALENDAR[[:space:]]     {lexerLogger->warn("T_HTTP_MKCALENDAR"); return T_HTTP_MKCALENDAR;}
 \"LINK[[:space:]]           {lexerLogger->warn("T_HTTP_LINK"); return T_HTTP_LINK;}
 \"UNLINK[[:space:]]         {lexerLogger->warn("T_HTTP_UNLINK"); return T_HTTP_UNLINK;}
-[[:space:]]+                {lexerLogger->warn("T_SPACE"); return T_SPACE;};
+[ \t]+                      {lexerLogger->warn("T_SPACE"); return T_SPACE;};
 [[:digit:]]+                {lexerLogger->warn("T_DIGIT"); return T_DIGIT;}
 [[:xdigit:]]+               {lexerLogger->warn("T_ALPHANUM"); return T_ALPHANUM;}
 [[:alpha:]]+                {lexerLogger->warn("T_ALPHA"); return T_ALPHA;}
 [[:punct:]]+                {lexerLogger->warn("T_PUNCT"); return T_PUNCT;}
+\n                          {lexerLogger->warn("T_NEW_LINE"); return T_NEW_LINE;}
+<IN_EOF><<EOF>>             {return 0;}
+<<EOF>>                     {lexerLogger->warn("T_EOF"); BEGIN(IN_EOF); return T_EOF;}
 %%
