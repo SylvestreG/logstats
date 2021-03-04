@@ -47,22 +47,14 @@ Core::run() {
 void Core::sigInt() {}
 
 void Core::onWrite() {
-  spdlog::info("on write");
+  size_t size{1};
 
-  size_t size;
-
-  std::string buf;
-  buf.reserve(_config->bufferSizeBytes());
-
-  size = 1;
   while (size != 0) {
+    std::string buf;
+    buf.reserve(_config->bufferSizeBytes());
+
     size = _ifs.readsome(buf.data(), _config->bufferSizeBytes());
     buf.resize(buf.size() + size);
-
-    if (size >= _config->bufferSizeBytes()) {
-      buf.reserve(buf.size() + _config->bufferSizeBytes());
-    }
+    spdlog::info("read {} bits", buf.size());
   }
-
-  spdlog::info("read {} bits", buf.size());
 }
