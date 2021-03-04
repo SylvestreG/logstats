@@ -51,7 +51,7 @@ TEST(parser, simpleLineIpv6) {
 
 TEST(parser, badIp) {
   auto result =
-      clf::parser().parseLine("datadog.com - frank [10/Oct/2000:13:55:36 "
+      clf::parser().parseLine("datadog.com toto-13134@!!411 frank [10/Oct/2000:13:55:36 "
                   "-0700] \"GET /apache_pb.gif HTTP/1.0\" 200 2326");
 
   ASSERT_TRUE(result);

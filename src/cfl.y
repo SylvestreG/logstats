@@ -22,7 +22,8 @@ std::shared_ptr<spdlog::logger> parserLogger = spdlog::stderr_color_mt("parser")
 %locations
 
 %union {
-  uint32_t ip;
+  std::string *str;
+  boost::beast::http::verb requestType;
 }
 
 %token T_SPACE T_DOT T_DIGIT T_ALPHANUM T_COLON T_DASH T_ALPHA T_PUNCT
@@ -35,6 +36,8 @@ std::shared_ptr<spdlog::logger> parserLogger = spdlog::stderr_color_mt("parser")
 %token T_HTTP_1_0 T_HTTP_1_1
 %token T_NEW_LINE T_EOF
 %start main_rule
+
+%type<str> T_ALPHA T_PUNCT T_DIGIT T_ALPHANUM anything anythingList
 
 %%
 
@@ -57,7 +60,7 @@ ip:
 	;
 
 ipv4:
-	T_DIGIT T_DOT T_DIGIT T_DOT T_DIGIT T_DOT T_DIGIT { parserLogger->info("IPV4"); }
+	T_DIGIT T_DOT T_DIGIT T_DOT T_DIGIT T_DOT T_DIGIT { parserLogger->info("IPV4"); delete $1; delete $3; delete $5; delete $7; }
 	;
 
 ipv6:
@@ -65,17 +68,17 @@ ipv6:
 	;
 
 userIdentifier:
-	anythingList T_SPACE { parserLogger->info("userIdentifier"); }
+	anythingList T_SPACE { parserLogger->info("userIdentifier"); parser->onUserIdentifier($1); }
 	;
 
 userId:
-	anythingList T_SPACE { parserLogger->info("userId"); }
+	anythingList T_SPACE { parserLogger->info("userIdentifier"); parser->onUserId($1); }
 	;
 
 timestamp:
 	T_DASH T_SPACE { parserLogger->info("timestamp"); }
-	| T_OPEN_TAB T_DIGIT T_SLASH T_ALPHA T_SLASH T_DIGIT T_COLON T_DIGIT T_COLON T_DIGIT T_COLON T_DIGIT T_SPACE T_PLUS T_DIGIT T_CLOSE_TAB T_SPACE { parserLogger->info("TIME"); }
-	| T_OPEN_TAB T_DIGIT T_SLASH T_ALPHA T_SLASH T_DIGIT T_COLON T_DIGIT T_COLON T_DIGIT T_COLON T_DIGIT T_SPACE T_DASH T_DIGIT T_CLOSE_TAB T_SPACE { parserLogger->info("TIME"); }
+	| T_OPEN_TAB T_DIGIT T_SLASH T_ALPHA T_SLASH T_DIGIT T_COLON T_DIGIT T_COLON T_DIGIT T_COLON T_DIGIT T_SPACE T_PLUS T_DIGIT T_CLOSE_TAB T_SPACE { parserLogger->info("TIME"); delete $2; delete $4; delete $6; delete $8; delete $10; delete $15;}
+	| T_OPEN_TAB T_DIGIT T_SLASH T_ALPHA T_SLASH T_DIGIT T_COLON T_DIGIT T_COLON T_DIGIT T_COLON T_DIGIT T_SPACE T_DASH T_DIGIT T_CLOSE_TAB T_SPACE { parserLogger->info("TIME"); delete $2; delete $4; delete $6; delete $8; delete $10; delete $15;}
 	| error T_SPACE  { parserLogger->info("bad timestamp"); }
 	;
 
@@ -88,20 +91,20 @@ request:
 
 error_code:
 	T_DASH T_SPACE { parserLogger->info("error_code"); }
-	| T_DIGIT T_SPACE { parserLogger->info("error_code");};
+	| T_DIGIT T_SPACE { parserLogger->info("error_code"); parser->onErrorCode(boost::beast::http::int_to_status(std::stoul(*$1))); delete $1;};
 
 size:
-	T_DASH { parserLogger->info("size"); }
-	| T_DIGIT { parserLogger->info("size");};
+	T_DASH { parserLogger->info("no size"); }
+	| T_DIGIT { parserLogger->info("size"); parser->onObjectSize(std::stoul(*$1)); delete $1;};
 
 hex:
-	T_ALPHANUM
-	| T_DIGIT
+	T_ALPHANUM  { delete $1; }
+	| T_DIGIT  { delete $1; }
 	;
 
 anythingList:
-	anything
-	| anythingList anything
+	anything { $$ = $1; }
+	| anythingList anything { $1->append(*$2); delete $2; $$ = $1;}
 	;
 
 pathList:
@@ -114,16 +117,16 @@ path:
 	;
 
 url:
-	T_ALPHA
-	| T_ALPHANUM
-	| T_DIGIT
+	T_ALPHA { delete $1; }
+	| T_ALPHANUM  { delete $1; }
+	| T_DIGIT  { delete $1; }
 	| T_DOT
-	| T_PUNCT
-	| url T_ALPHA
-	| url T_ALPHANUM
-	| url T_DIGIT
+	| T_PUNCT  { delete $1; }
+	| url T_ALPHA  { delete $2; }
+	| url T_ALPHANUM  { delete $2; }
+	| url T_DIGIT { delete $2; }
 	| url T_DOT
-	| url T_PUNCT
+	| url T_PUNCT { delete $2; }
 	;
 
 http_request_type:
@@ -162,19 +165,19 @@ http_request_type:
 	| T_HTTP_UNLINK
 
 anything:
-	T_DOT
-	| T_DIGIT
-	| T_ALPHANUM
-	| T_COLON
-	| T_DASH
-	| T_ALPHA
-	| T_PUNCT
-	| T_OPEN_TAB
-	| T_CLOSE_TAB
-	| T_PLUS
-	| T_SLASH
-	| T_QUOTE
-	| http_request_type
+	T_DOT { $$ = new std::string("."); }
+	| T_DIGIT { $$ = $1; }
+	| T_ALPHANUM { $$ = $1; }
+	| T_COLON { $$ = new std::string(":"); }
+	| T_DASH { $$ = new std::string("-"); }
+	| T_ALPHA { $$ = $1; }
+	| T_PUNCT { $$ = $1; }
+	| T_OPEN_TAB { $$ = new std::string("["); }
+	| T_CLOSE_TAB { $$ = new std::string("]"); }
+	| T_PLUS { $$ = new std::string("]"); }
+	| T_SLASH { $$ = new std::string("]"); }
+	| T_QUOTE { $$ = new std::string("]"); }
+	| http_request_type { $$ = new std::string("]"); }
 
 %%
 
