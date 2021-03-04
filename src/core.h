@@ -1,11 +1,18 @@
 #ifndef __CORE_H__
 #define __CORE_H__
 
+#include <chrono>
+#include <fstream>
+#include <map>
 #include <filesystem>
 #include <thread>
-#include <event2/event.h>
+
+#include <boost/asio.hpp>
+#include <libfswatch/c++/monitor.hpp>
 
 #include "config.h"
+
+using Timepoint = std::chrono::time_point<std::chrono::system_clock>;
 
 class Core {
 public:
@@ -22,16 +29,17 @@ protected:
   void onWrite();
 
 private:
-  //libevent backend
-  event_base *_evBase;
-  event *_evRead;
-  event *_evSignal;
+  //fs events
+  fsw::monitor *_monitor;
+  std::thread _monitorThread;
+  std::thread _lineSplitterThread;
+  boost::asio::thread_pool _workerThreads;
 
   //file that we monitor
-  FILE *_fd;
+  std::ifstream _ifs;
 
   //data container
-  std::vector<std::string> buf;
+  std::map<Timepoint, std::string> bufferQueue;
 
   std::shared_ptr<cfl::Config> _config;
   std::thread _producers;

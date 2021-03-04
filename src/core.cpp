@@ -2,73 +2,67 @@
 // Created by syl on 3/3/21.
 //
 #include <cstdio>
-#include <exception>
+#include <signal.h>
+
+#include <libfswatch/c++/event.hpp>
+#include <libfswatch/c++/monitor_factory.hpp>
 #include <spdlog/spdlog.h>
 
 #include "core.h"
 
-namespace {
-auto registerEv = [](event *ev) {
-  if (!ev)
-    throw std::runtime_error("cannot create event");
-
-  if (event_add(ev, nullptr) < 0)
-    throw std::runtime_error("cannot add event");
-};
-};
-
 Core::Core(std::shared_ptr<cfl::Config> cfg, std::filesystem::path const &path)
-    : _config(cfg), _evBase(event_base_new()) {
-  _evSignal = evsignal_new(
-      _evBase, SIGINT,
-      [](evutil_socket_t, short, void *arg) {
-        auto self = static_cast<Core *>(arg);
-        self->sigInt();
-      },
-      (void *)this);
+    : _config(cfg), _ifs(path, std::ios_base::ate) {
 
-  // open file and fseek to the end;
-  _fd = fopen(path.string().c_str(), "r");
-  if (!_fd)
+  std::vector<std::string> paths;
+  paths.emplace_back(path.string());
+
+  if (!_ifs.is_open())
     throw std::runtime_error("cannot open log file");
 
-  fseek(_fd, 0, SEEK_END);
-
-  _evRead = event_new(
-      _evBase, fileno(_fd), EV_READ,
-      [](evutil_socket_t, short, void *arg) {
+  _monitor = fsw::monitor_factory::create_monitor(
+      fsw_monitor_type::system_default_monitor_type, paths,
+      [](const std::vector<fsw::event> &events, void *arg) {
         auto self = static_cast<Core *>(arg);
         self->onWrite();
       },
-      (void *)this);
+      this);
+  _monitor->add_event_type_filter({fsw_event_flag::Updated});
+  _monitor->set_latency(0.01);
+  _monitor->set_allow_overflow(true);
 
-  registerEv(_evSignal);
-  registerEv(_evRead);
+  _monitorThread = std::thread([&]() { _monitor->start(); });
 }
 
 Core::~Core() {
-  event_free(_evSignal);
-  event_free(_evRead);
-  event_base_free(_evBase);
+  _monitor->stop();
+  delete _monitor;
+  _ifs.close();
 }
 
-void Core::sigInt() {
-  timeval tv{0, 100};
-  spdlog::info("quit app");
-
-  event_base_loopexit(_evBase, &tv);
+void
+Core::run() {
+  _monitorThread.join();
 }
 
-void Core::run() { event_base_dispatch(_evBase); }
+void Core::sigInt() {}
 
 void Core::onWrite() {
   spdlog::info("on write");
-  std::vector<uint8_t> buffer;
-  buffer.resize(4096);
-  auto size = fread(buffer.data(), 1, 4096, _fd);
-  fseek(_fd, 0, SEEK_END);
 
-  spdlog::info("{} bits", size);
+  size_t size;
 
-  registerEv(_evRead);
+  std::string buf;
+  buf.reserve(_config->bufferSizeBytes());
+
+  size = 1;
+  while (size != 0) {
+    size = _ifs.readsome(buf.data(), _config->bufferSizeBytes());
+    buf.resize(buf.size() + size);
+
+    if (size >= _config->bufferSizeBytes()) {
+      buf.reserve(buf.size() + _config->bufferSizeBytes());
+    }
+  }
+
+  spdlog::info("read {} bits", buf.size());
 }
