@@ -20,14 +20,10 @@ namespace clf {
 using address =
     std::variant<uint32_t, std::tuple<uint64_t, uint64_t>, string_view>;
 
-enum class httpVersion {
-  httpV10,
-  httpV11,
-  httpVUnknown
-};
+enum class httpVersion { httpV10, httpV11, httpVUnknown };
 
 constexpr const char *to_string(httpVersion const v) {
-  if  (v == httpVersion::httpV10)
+  if (v == httpVersion::httpV10)
     return "HTTP 1/0";
   else if (v == httpVersion::httpV11)
     return "HTTP 1/1";
@@ -59,7 +55,8 @@ public:
   void onUserIdentifier(std::string *) noexcept;
   void onUserId(std::string *) noexcept;
   void onTimeStamp(std::string *) noexcept;
-  void onRequest(boost::beast::http::verb, std::filesystem::path path, httpVersion version) noexcept;
+  void onRequest(boost::beast::http::verb, std::filesystem::path path,
+                 httpVersion version) noexcept;
   void onObjectSize(size_t) noexcept;
   void onErrorCode(boost::beast::http::status) noexcept;
   void onParseDone() noexcept;

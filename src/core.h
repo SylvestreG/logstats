@@ -2,21 +2,21 @@
 #define __CORE_H__
 
 #include <chrono>
+#include <filesystem>
 #include <fstream>
 #include <map>
-#include <filesystem>
 #include <thread>
 
 #include <boost/asio.hpp>
-#include <libfswatch/c++/monitor.hpp>
 
+#include "buffer_splitter.h"
 #include "config.h"
-
-using Timepoint = std::chrono::time_point<std::chrono::system_clock>;
+#include "file_watcher.h"
 
 class Core {
 public:
-  explicit Core(std::shared_ptr<cfl::Config> cfg, std::filesystem::path const& path);
+  explicit Core(std::shared_ptr<cfl::Config> cfg,
+                std::filesystem::path const &path);
   Core() = delete;
   ~Core();
   Core(Core const &) = delete;
@@ -26,23 +26,22 @@ public:
 
 protected:
   void sigInt();
-  void onWrite();
+
+  void onNewBuffer(std::vector<std::pair<Timepoint, std::string>> &&buffers);
 
 private:
-  //fs events
-  fsw::monitor *_monitor;
-  std::thread _monitorThread;
-  std::thread _lineSplitterThread;
-  boost::asio::thread_pool _workerThreads;
+  void refreshDisplayCallback();
 
-  //file that we monitor
-  std::ifstream _ifs;
+  // fs events
+  boost::asio::io_context _ioCtx;
+  boost::asio::steady_timer _timer;
 
-  //data container
-  std::map<Timepoint, std::string> bufferQueue;
+  BufferSplitter _splitter;
+  FileWatcher _fileWatcher;
+
+  // data container
 
   std::shared_ptr<cfl::Config> _config;
-  std::thread _producers;
 };
 
 #endif /* __CORE_H__ */

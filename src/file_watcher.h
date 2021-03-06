@@ -10,17 +10,19 @@
 #include "config.h"
 
 using Timepoint = std::chrono::time_point<std::chrono::system_clock>;
-using newBufferCb = std::function<void (std::vector<std::pair<Timepoint, std::string>> &&)>;
+using newBufferCb =
+    std::function<void(std::vector<std::pair<Timepoint, std::string>> &&)>;
 
 class FileWatcher {
 public:
-  FileWatcher(std::shared_ptr<cfl::Config>, newBufferCb newBuffCb, std::filesystem::path);
+  FileWatcher(std::shared_ptr<cfl::Config>, newBufferCb newBuffCb,
+              std::filesystem::path);
   ~FileWatcher();
 
   FileWatcher() = delete;
-  FileWatcher(FileWatcher const&) = delete;
+  FileWatcher(FileWatcher const &) = delete;
 
-  FileWatcher& operator=(FileWatcher const&) = delete;
+  FileWatcher &operator=(FileWatcher const &) = delete;
 
   void start();
   void stop();

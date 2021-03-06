@@ -6,9 +6,9 @@
 #include <sys/uio.h>
 #include <unistd.h>
 
-#include <spdlog/spdlog.h>
 #include <libfswatch/c++/event.hpp>
 #include <libfswatch/c++/monitor_factory.hpp>
+#include <spdlog/spdlog.h>
 
 #include "file_watcher.h"
 
@@ -55,7 +55,7 @@ void FileWatcher::onWrite() {
     size = read(_fd, s.data(), _cfg->bufferSizeBytes());
     if (size > 0) {
       s.resize(size);
-      //TODO lookup for existing buffer with same time
+      // TODO lookup for existing buffer with same time
       readVector.emplace_back(std::chrono::system_clock::now(), std::move(s));
     }
   } while (size > 0);

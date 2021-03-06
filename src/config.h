@@ -35,6 +35,6 @@ private:
   uint16_t _bufferSizeBytes{4096};
 };
 
-};     // namespace cfl
+}; // namespace cfl
 
 #endif /* __CONFIG_H__ */
