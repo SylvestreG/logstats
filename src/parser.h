@@ -10,8 +10,6 @@
 
 #include <boost/beast.hpp>
 
-#include "http.h"
-
 using namespace std;
 using namespace std::chrono;
 

@@ -2,19 +2,18 @@
 // Created by sylvestre on 06/03/2021.
 //
 #include <fcntl.h>
-#include <sys/types.h>
 #include <sys/uio.h>
 #include <unistd.h>
 
 #include <libfswatch/c++/event.hpp>
 #include <libfswatch/c++/monitor_factory.hpp>
-#include <spdlog/spdlog.h>
+#include <utility>
 
 #include "file_watcher.h"
 
 FileWatcher::FileWatcher(std::shared_ptr<cfl::Config> config,
-                         newBufferCb newBuffCb, std::filesystem::path path)
-    : _cfg{config}, _buffCb(newBuffCb) {
+                         newBufferCb newBuffCb, const std::filesystem::path& path)
+    : _cfg{std::move(config)}, _buffCb(std::move(newBuffCb)) {
   std::vector<std::string> paths;
   paths.emplace_back(path.string());
 
@@ -40,14 +39,16 @@ void FileWatcher::start() {
 }
 
 void FileWatcher::stop() {
-  if (_monitor->is_running())
+  if (_monitor->is_running()) {
     _monitor->stop();
+    _fileWatchThread.join();
+  }
 }
 
 void FileWatcher::onWrite() {
   // we store data here to not lock at each read.
   std::vector<std::pair<Timepoint, std::string>> readVector;
-  ssize_t size{0};
+  ssize_t size;
 
   do {
     std::string s;
@@ -65,6 +66,7 @@ void FileWatcher::onWrite() {
 }
 
 FileWatcher::~FileWatcher() {
+  stop();
   delete _monitor;
   close(_fd);
 }

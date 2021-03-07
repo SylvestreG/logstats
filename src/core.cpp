@@ -6,7 +6,7 @@
 #include <spdlog/spdlog.h>
 
 Core::Core(std::shared_ptr<cfl::Config> cfg, std::filesystem::path const &path)
-    : _config{cfg},
+    : _config{std::move(cfg)},
       _fileWatcher{
           cfg,
           [&](std::vector<std::pair<Timepoint, std::string>> &&buffers) {
@@ -35,7 +35,7 @@ void Core::run() {
   spdlog::info("asio done");
 }
 
-void Core::sigInt() {}
+//void Core::sigInt() {}
 
 void Core::onNewBuffer(
     std::vector<std::pair<Timepoint, std::string>> &&buffers) {

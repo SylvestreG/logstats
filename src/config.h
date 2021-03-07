@@ -12,7 +12,7 @@ namespace cfl {
 class Config {
 public:
   Config() = default;
-  Config(std::filesystem::path file);
+  explicit Config(const std::filesystem::path& file);
   ~Config() = default;
   Config(Config const &conf) = delete;
   Config &operator=(Config const &conf) = delete;
@@ -35,6 +35,6 @@ private:
   uint16_t _bufferSizeBytes{4096};
 };
 
-}; // namespace cfl
+} // namespace cfl
 
 #endif /* __CONFIG_H__ */

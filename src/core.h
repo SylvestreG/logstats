@@ -25,7 +25,7 @@ public:
   void run();
 
 protected:
-  void sigInt();
+//  void sigInt();
 
   void onNewBuffer(std::vector<std::pair<Timepoint, std::string>> &&buffers);
 

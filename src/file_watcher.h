@@ -16,7 +16,7 @@ using newBufferCb =
 class FileWatcher {
 public:
   FileWatcher(std::shared_ptr<cfl::Config>, newBufferCb newBuffCb,
-              std::filesystem::path);
+              const std::filesystem::path&);
   ~FileWatcher();
 
   FileWatcher() = delete;
@@ -31,10 +31,8 @@ private:
   void onWrite();
 
   std::shared_ptr<cfl::Config> _cfg;
-
   fsw::monitor *_monitor;
   std::thread _fileWatchThread;
-
   newBufferCb _buffCb;
   int _fd;
 };

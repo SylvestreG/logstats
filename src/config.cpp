@@ -8,7 +8,7 @@
 #include <spdlog/spdlog.h>
 #include <type_traits>
 
-cfl::Config::Config(std::filesystem::path file) {
+cfl::Config::Config(const std::filesystem::path& file) {
   std::ifstream ifs(file);
 
   try {

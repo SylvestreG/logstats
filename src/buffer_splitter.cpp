@@ -2,7 +2,6 @@
 // Created by sylvestre on 06/03/2021.
 //
 #include "buffer_splitter.h"
-#include <spdlog/spdlog.h>
 
 BufferSplitter::BufferSplitter() : _stopped{true} {}
 
