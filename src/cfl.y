@@ -12,7 +12,8 @@ typedef void * yyscan_t;
 #include "cflLexer.h"
 
 static void yyerror(YYLTYPE *yylloc, yyscan_t scanner, clf::Parser *parser, const char * msg);
-std::shared_ptr<spdlog::logger> parserLogger = spdlog::stderr_color_mt("parser");
+std::shared_ptr<spdlog::logger> parserLogger =
+    spdlog::basic_logger_mt("parser", "parser.log");
 %}
 
 %define api.pure full
@@ -47,8 +48,10 @@ main_rule:
 
 cfl_rule:
 	| ip userIdentifier userId timestamp request error_code size T_NEW_LINE { parserLogger->info("parse succeed"); }
+	| ip userIdentifier userId timestamp request error_code size T_NEW_LINE T_EOF{ parserLogger->info("parse succeed"); }
 	| ip userIdentifier userId timestamp request error_code size T_EOF { parserLogger->info("parse succeed"); }
 	| ip userIdentifier userId timestamp request error_code size T_SPACE T_NEW_LINE { parserLogger->info("parse succeed"); }
+	| ip userIdentifier userId timestamp request error_code size T_SPACE T_NEW_LINE T_EOF { parserLogger->info("parse succeed"); }
 	| ip userIdentifier userId timestamp request error_code size T_SPACE T_EOF { parserLogger->info("parse succeed"); }
 	;
 
@@ -198,8 +201,11 @@ std::optional<clf::ClfLine> clf::Parser::parseLine(std::string_view str) {
 	int val = yyparse(scanner, this);
 	yylex_destroy (scanner) ;
 
-	if (val)
+	if (val) {
+		parserLogger->info("cannot parse {}", str);
 		return nullopt;
+	}
+
 
 	return _currentLine;
 }

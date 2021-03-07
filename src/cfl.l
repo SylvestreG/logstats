@@ -5,10 +5,8 @@
 #include "parser.h"
 #include "cflParser.hpp"
 
-/*std::shared_ptr<spdlog::logger> lexerLogger =
-    spdlog::basic_logger_mt("lexer", "lexer.log");*/
 std::shared_ptr<spdlog::logger> lexerLogger =
-    spdlog::stderr_color_mt("lexer");
+    spdlog::basic_logger_mt("lexer", "lexer.log");
 %}
 
 %option reentrant bison-bridge bison-locations

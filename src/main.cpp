@@ -4,9 +4,15 @@
 #include "config.h"
 #include "core.h"
 
+extern std::shared_ptr<spdlog::logger> parserLogger;
+extern std::shared_ptr<spdlog::logger> lexerLogger;
+
 int main(int argc, char **argv) {
   std::filesystem::path confFile;
   std::filesystem::path inputFile;
+
+  parserLogger->flush_on(spdlog::level::trace);
+  lexerLogger->flush_on(spdlog::level::trace);
 
   auto cli = lyra::cli() |
              lyra::opt(confFile, "conf")["-c"]["--conf"]("config file") |

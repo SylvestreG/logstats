@@ -5,6 +5,8 @@
 #include "parser.h"
 #include <spdlog/spdlog.h>
 
+extern std::shared_ptr<spdlog::logger> parserLogger;
+
 void clf::Parser::onIp(clf::address) noexcept {}
 
 void clf::Parser::onUserIdentifier(std::string *uId) noexcept {
@@ -24,7 +26,7 @@ void clf::Parser::onTimeStamp(std::string *) noexcept {}
 void clf::Parser::onRequest(boost::beast::http::verb request,
                             std::filesystem::path path,
                             httpVersion version) noexcept {
-  spdlog::info("userId found:{}",
+  parserLogger->info("userId found:{}",
                boost::beast::http::to_string(request).to_string(),
                path.string(), clf::to_string(version));
 }
@@ -34,6 +36,6 @@ void clf::Parser::onObjectSize(size_t size) noexcept {
 }
 
 void clf::Parser::onErrorCode(boost::beast::http::status st) noexcept {
-  spdlog::info("error_code:{}",
+  parserLogger->info("error_code:{}",
                boost::beast::http::obsolete_reason(st).to_string());
 }
