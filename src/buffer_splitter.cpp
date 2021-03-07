@@ -49,10 +49,18 @@ void BufferSplitter::split() {
     lck.unlock();
 
     // split data and call the pool to parse it !
+    consumeBuffers(std::move(copyMap));
   }
 }
 
 std::map<Timepoint, std::string> BufferSplitter::getWorkingMap() {
+
+  // if there is some leftover put it in first buffer
+  if (!_buffer._leftover.empty()) {
+    _buffer._bufferMap.begin()->second.insert(0, _buffer._leftover);
+    _buffer._leftover.clear();
+  }
+
   auto last = _buffer._bufferMap.rbegin();
   std::map<Timepoint, std::string> mapCopy;
 
@@ -106,4 +114,11 @@ std::map<Timepoint, std::string> BufferSplitter::getWorkingMap() {
   _buffer._bufferMap.emplace(key, std::move(value));
 
   return getWorkingMap();
+}
+
+void BufferSplitter::consumeBuffers(std::map<Timepoint, std::string>&& map) {
+  for (auto& entry: map) {
+
+  }
+  map.clear();
 }

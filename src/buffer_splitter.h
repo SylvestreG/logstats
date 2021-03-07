@@ -46,6 +46,7 @@ private:
   // because is access heavily to _buffer that can
   // be access in other threads in pushIntoSplitter.
   std::map<Timepoint, std::string> getWorkingMap();
+  void consumeBuffers(std::map<Timepoint, std::string> &&map);
 
   bool _stopped;
   std::thread _splitterThread;
