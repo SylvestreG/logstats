@@ -4,15 +4,15 @@ find_package(FLEX 2.6)
 bison_target(cflParser cfl.y ${CMAKE_BINARY_DIR}/cflParser.cpp COMPILE_FLAGS "-vt --debug")
 flex_target(cflParser cfl.l ${CMAKE_BINARY_DIR}/cflLexer.cpp COMPILE_FLAGS --header-file=${CMAKE_BINARY_DIR}/cflLexer.h)
 
-add_library(logLib  ${CMAKE_CURRENT_SOURCE_DIR}/buffer_splitter.cpp
+add_library(clf     ${CMAKE_CURRENT_SOURCE_DIR}/buffer_splitter.cpp
                     ${CMAKE_CURRENT_SOURCE_DIR}/config.cpp
-                    ${CMAKE_CURRENT_SOURCE_DIR}/core.cpp
                     ${CMAKE_CURRENT_SOURCE_DIR}/file_watcher.cpp
                     ${CMAKE_CURRENT_SOURCE_DIR}/parser.cpp
                     ${BISON_cflParser_OUTPUTS}
                     ${FLEX_cflParser_OUTPUTS})
-target_include_directories(logLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(logLib PUBLIC CONAN_PKG::boost CONAN_PKG::fswatch CONAN_PKG::spdlog CONAN_PKG::nlohmann_json CONAN_PKG::lyra)
+target_include_directories(clf PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(clf PUBLIC CONAN_PKG::boost CONAN_PKG::fswatch CONAN_PKG::spdlog CONAN_PKG::nlohmann_json CONAN_PKG::lyra)
 
-add_executable(clfMonitor main.cpp)
-target_link_libraries(clfMonitor PRIVATE logLib)
+add_executable(clfMonitor ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+                          ${CMAKE_CURRENT_SOURCE_DIR}/core.cpp)
+target_link_libraries(clfMonitor PRIVATE clf)
