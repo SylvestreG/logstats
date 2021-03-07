@@ -42,7 +42,8 @@ void Core::onNewBuffer(
 }
 
 void Core::refreshDisplayCallback() {
-  spdlog::info("refresh");
+  _ui.updateDisplay();
+
   _timer.expires_at(_timer.expiry() + _config->refreshTimeMs());
   _timer.async_wait(
       [&](boost::system::error_code const &) { refreshDisplayCallback(); });
