@@ -10,7 +10,11 @@ void clf::BufferSplitter::pushIntoSplitter(
     std::vector<std::pair<clf::Timepoint, std::string>> &&buffers) {
   std::unique_lock<std::mutex> lock(_buffer._bufferMtx);
   for (auto &value : buffers) {
-    _buffer._bufferMap.emplace(value);
+    auto it = _buffer._bufferMap.find(value.first);
+    if (it == _buffer._bufferMap.end())
+      _buffer._bufferMap.emplace(value);
+    else
+      it->second.append(value.second);
   }
   _buffer._bufferCv.notify_one();
   buffers.clear();
