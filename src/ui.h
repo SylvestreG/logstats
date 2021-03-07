@@ -14,7 +14,6 @@ public:
   Ui& operator=(Ui const&) = delete;
 
   void updateDisplay(void);
-
 private:
 };
 } // namespace clf

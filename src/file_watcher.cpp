@@ -11,6 +11,9 @@
 
 #include "file_watcher.h"
 
+//TODO
+// - on open seek to the end...
+// - on file change update the fd...
 clf::FileWatcher::FileWatcher(std::shared_ptr<clf::Config> config,
                               const std::filesystem::path &path)
     : _cfg{std::move(config)} {
