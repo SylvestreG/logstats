@@ -39,12 +39,12 @@ struct ClfLine {
   optional<std::size_t> objectSize;
 };
 
-class parser {
+class Parser {
 public:
-  parser() = default;
-  ~parser() = default;
-  parser(parser const &) = delete;
-  parser &operator=(parser const &) = delete;
+  Parser() = default;
+  ~Parser() = default;
+  Parser(Parser const &) = delete;
+  Parser &operator=(Parser const &) = delete;
 
   std::optional<ClfLine> parseLine(std::string_view str);
 

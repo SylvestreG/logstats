@@ -12,6 +12,8 @@
 #include <thread>
 #include <vector>
 
+namespace clf {
+
 using Timepoint = std::chrono::time_point<std::chrono::system_clock>;
 
 struct BufferResouces {
@@ -22,6 +24,8 @@ struct BufferResouces {
   std::string _leftover;
 };
 
+using newLineCallBack = std::function<void(std::string &&)>;
+
 class BufferSplitter {
 public:
   BufferSplitter();
@@ -29,6 +33,8 @@ public:
   ~BufferSplitter() = default;
 
   BufferSplitter &operator=(BufferSplitter const &) = delete;
+
+  void setNewLineCallback(newLineCallBack cb);
 
   void start(); // run splitter thread
   void stop();  // stop splitter thread
@@ -48,9 +54,11 @@ private:
   std::map<Timepoint, std::string> getWorkingMap();
   void consumeBuffers(std::map<Timepoint, std::string> &&map);
 
+  newLineCallBack _newLineCb;
   bool _stopped;
   std::thread _splitterThread;
   BufferResouces _buffer;
 };
+} // namespace clf
 
 #endif // LOGSTATS_BUFFER_SPLITTER_H

@@ -11,14 +11,14 @@ typedef void * yyscan_t;
 #include "cflParser.hpp"
 #include "cflLexer.h"
 
-static void yyerror(YYLTYPE *yylloc, yyscan_t scanner, clf::parser *parser, const char * msg);
+static void yyerror(YYLTYPE *yylloc, yyscan_t scanner, clf::Parser *parser, const char * msg);
 std::shared_ptr<spdlog::logger> parserLogger = spdlog::stderr_color_mt("parser");
 %}
 
 %define api.pure full
 %lex-param {yyscan_t scanner}
 %parse-param {yyscan_t scanner}
-%parse-param {clf::parser *parser}
+%parse-param {clf::Parser *parser}
 %locations
 
 %union {
@@ -185,10 +185,10 @@ int yywrap ( yyscan_t yyscanner ) {
 	return 1;
 }
 
-static void yyerror(YYLTYPE *yy, yyscan_t scanner, clf::parser *parser, const char * msg) {
+static void yyerror(YYLTYPE *yy, yyscan_t scanner, clf::Parser *parser, const char * msg) {
 }
 
-std::optional<clf::ClfLine> clf::parser::parseLine(std::string_view str) {
+std::optional<clf::ClfLine> clf::Parser::parseLine(std::string_view str) {
 	yyscan_t scanner;
 	yylex_init(&scanner);
 	yylex_init_extra(this, &scanner);

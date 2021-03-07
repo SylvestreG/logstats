@@ -11,9 +11,9 @@
 
 #include "file_watcher.h"
 
-FileWatcher::FileWatcher(std::shared_ptr<cfl::Config> config,
-                         newBufferCb newBuffCb, const std::filesystem::path& path)
-    : _cfg{std::move(config)}, _buffCb(std::move(newBuffCb)) {
+clf::FileWatcher::FileWatcher(std::shared_ptr<clf::Config> config,
+                              const std::filesystem::path &path)
+    : _cfg{std::move(config)} {
   std::vector<std::string> paths;
   paths.emplace_back(path.string());
 
@@ -33,19 +33,19 @@ FileWatcher::FileWatcher(std::shared_ptr<cfl::Config> config,
   _monitor->set_allow_overflow(true);
 }
 
-void FileWatcher::start() {
+void clf::FileWatcher::start() {
   if (!_monitor->is_running())
     _fileWatchThread = std::thread([&]() { _monitor->start(); });
 }
 
-void FileWatcher::stop() {
+void clf::FileWatcher::stop() {
   if (_monitor->is_running()) {
     _monitor->stop();
     _fileWatchThread.join();
   }
 }
 
-void FileWatcher::onWrite() {
+void clf::FileWatcher::onWrite() {
   // we store data here to not lock at each read.
   std::vector<std::pair<Timepoint, std::string>> readVector;
   ssize_t size;
@@ -62,11 +62,14 @@ void FileWatcher::onWrite() {
   } while (size > 0);
 
   if (!readVector.empty())
-    _buffCb(std::move(readVector));
+    if (_buffCb)
+      _buffCb(std::move(readVector));
 }
 
-FileWatcher::~FileWatcher() {
+clf::FileWatcher::~FileWatcher() {
   stop();
   delete _monitor;
   close(_fd);
 }
+
+void clf::FileWatcher::setNewBufferCallback(newBufferCb cb) { _buffCb = cb; }

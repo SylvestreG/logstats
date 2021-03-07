@@ -5,15 +5,16 @@
 #include "core.h"
 #include <spdlog/spdlog.h>
 
-Core::Core(std::shared_ptr<cfl::Config> cfg, std::filesystem::path const &path)
-    : _config{std::move(cfg)},
-      _fileWatcher{
-          cfg,
-          [&](std::vector<std::pair<Timepoint, std::string>> &&buffers) {
-            this->onNewBuffer(std::move(buffers));
-          },
-          path},
+Core::Core(std::shared_ptr<clf::Config> cfg, std::filesystem::path const &path)
+    : _config{std::move(cfg)}, _fileWatcher(std::move(cfg), path),
       _timer(_ioCtx, cfg->refreshTimeMs()) {
+  _fileWatcher.setNewBufferCallback(
+      [&](std::vector<std::pair<clf::Timepoint, std::string>> &&buffers) {
+        this->onNewBuffer(std::move(buffers));
+      });
+  _splitter.setNewLineCallback(
+      [&](std::string &&line) { spdlog::info("get new line {}", line); });
+
   _timer.async_wait(
       [&](boost::system::error_code const &) { refreshDisplayCallback(); });
 }
@@ -35,10 +36,8 @@ void Core::run() {
   spdlog::info("asio done");
 }
 
-//void Core::sigInt() {}
-
 void Core::onNewBuffer(
-    std::vector<std::pair<Timepoint, std::string>> &&buffers) {
+    std::vector<std::pair<clf::Timepoint, std::string>> &&buffers) {
   _splitter.pushIntoSplitter(std::move(buffers));
 }
 

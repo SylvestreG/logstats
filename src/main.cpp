@@ -30,11 +30,11 @@ int main(int argc, char **argv) {
   }
 
   try {
-    std::shared_ptr<cfl::Config> cfg;
+    std::shared_ptr<clf::Config> cfg;
     if (confFile.empty())
-      cfg = std::make_shared<cfl::Config>();
+      cfg = std::make_shared<clf::Config>();
     else
-      cfg = std::make_shared<cfl::Config>(confFile);
+      cfg = std::make_shared<clf::Config>(confFile);
 
     Core c(cfg, inputFile);
     c.run();

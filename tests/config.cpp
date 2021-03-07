@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 
 TEST(config, defaultVal) {
-  cfl::Config cfg;
+  clf::Config cfg;
 
   ASSERT_EQ(cfg.alertThresholdNumber(), 10);
   ASSERT_EQ(cfg.batchMaxSizeNumber(), 100);
@@ -15,7 +15,7 @@ TEST(config, defaultVal) {
 }
 
 TEST(config, fileDoesNotExist) {
-  ASSERT_THROW(cfl::Config("nonExistingFile.json"), std::exception);
+  ASSERT_THROW(clf::Config("nonExistingFile.json"), std::exception);
 }
 
 TEST(config, goodConfig) {
@@ -35,7 +35,7 @@ TEST(config, goodConfig) {
 )foo";
   ofs.close();
 
-  auto cfg = cfl::Config(path);
+  auto cfg = clf::Config(path);
 
   std::filesystem::remove(path);
 

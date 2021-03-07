@@ -2,11 +2,12 @@
 // Created by sylvestre on 06/03/2021.
 //
 #include "buffer_splitter.h"
+#include <spdlog/spdlog.h>
 
-BufferSplitter::BufferSplitter() : _stopped{true} {}
+clf::BufferSplitter::BufferSplitter() : _stopped{true} {}
 
-void BufferSplitter::pushIntoSplitter(
-    std::vector<std::pair<Timepoint, std::string>> &&buffers) {
+void clf::BufferSplitter::pushIntoSplitter(
+    std::vector<std::pair<clf::Timepoint, std::string>> &&buffers) {
   std::unique_lock<std::mutex> lock(_buffer._bufferMtx);
   for (auto &value : buffers) {
     _buffer._bufferMap.emplace(value);
@@ -15,19 +16,19 @@ void BufferSplitter::pushIntoSplitter(
   buffers.clear();
 }
 
-void BufferSplitter::start() {
+void clf::BufferSplitter::start() {
   if (_stopped) {
     _stopped = false;
     _splitterThread = std::thread([&]() { split(); });
   }
 }
 
-void BufferSplitter::stop() {
+void clf::BufferSplitter::stop() {
   _stopped = true;
   _splitterThread.join();
 }
 
-void BufferSplitter::split() {
+void clf::BufferSplitter::split() {
   while (!_stopped) {
     // wakeup on terminate asked or
     // on new data into buffer;
@@ -49,11 +50,12 @@ void BufferSplitter::split() {
     lck.unlock();
 
     // split data and call the pool to parse it !
-    consumeBuffers(std::move(copyMap));
+    if (!copyMap.empty())
+      consumeBuffers(std::move(copyMap));
   }
 }
 
-std::map<Timepoint, std::string> BufferSplitter::getWorkingMap() {
+std::map<clf::Timepoint, std::string> clf::BufferSplitter::getWorkingMap() {
 
   // if there is some leftover put it in first buffer
   if (!_buffer._leftover.empty()) {
@@ -116,9 +118,31 @@ std::map<Timepoint, std::string> BufferSplitter::getWorkingMap() {
   return getWorkingMap();
 }
 
-void BufferSplitter::consumeBuffers(std::map<Timepoint, std::string>&& map) {
-  for (auto& entry: map) {
+void clf::BufferSplitter::consumeBuffers(std::map<Timepoint, std::string> &&map) {
+  std::string leftover;
 
+  for (auto &entry : map) {
+    if (!leftover.empty()) {
+      entry.second.insert(0, std::move(leftover));
+      leftover.clear();
+    }
+
+    auto pos = entry.second.find('\n');
+    while (pos != std::string::npos) {
+      std::string validStr = entry.second.substr(0, pos + 1);
+      entry.second.erase(0, pos + 1);
+      pos = entry.second.find('\n');
+      if (_newLineCb)
+        _newLineCb(std::move(validStr));
+    }
+
+    if (!entry.second.empty())
+      leftover = std::move(entry.second);
   }
+
   map.clear();
+}
+
+void clf::BufferSplitter::setNewLineCallback(newLineCallBack cb) {
+  _newLineCb = cb;
 }

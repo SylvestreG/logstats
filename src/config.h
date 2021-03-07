@@ -7,7 +7,7 @@
 
 using namespace std::chrono_literals;
 
-namespace cfl {
+namespace clf {
 
 class Config {
 public:

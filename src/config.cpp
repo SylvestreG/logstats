@@ -8,7 +8,7 @@
 #include <spdlog/spdlog.h>
 #include <type_traits>
 
-cfl::Config::Config(const std::filesystem::path& file) {
+clf::Config::Config(const std::filesystem::path& file) {
   std::ifstream ifs(file);
 
   try {
@@ -63,28 +63,28 @@ cfl::Config::Config(const std::filesystem::path& file) {
   }
 }
 
-uint16_t cfl::Config::batchMaxSizeNumber() const noexcept {
+uint16_t clf::Config::batchMaxSizeNumber() const noexcept {
   return _batchMaxSizeNumber;
 }
 
-std::chrono::milliseconds cfl::Config::batchMaxTime() const noexcept {
+std::chrono::milliseconds clf::Config::batchMaxTime() const noexcept {
   return _batchMaxTime;
 }
 
-uint8_t cfl::Config::consumerThreadsNumber() const noexcept {
+uint8_t clf::Config::consumerThreadsNumber() const noexcept {
   return _consumerThreadsNumber;
 }
 
-bool cfl::Config::debugEnabled() const noexcept { return _debugEnabled; }
+bool clf::Config::debugEnabled() const noexcept { return _debugEnabled; }
 
-std::chrono::milliseconds cfl::Config::refreshTimeMs() const noexcept {
+std::chrono::milliseconds clf::Config::refreshTimeMs() const noexcept {
   return _refreshTimeMs;
 }
 
-uint16_t cfl::Config::alertThresholdNumber() const noexcept {
+uint16_t clf::Config::alertThresholdNumber() const noexcept {
   return _alertThresholdNumber;
 }
 
-uint16_t cfl::Config::bufferSizeBytes() const noexcept {
+uint16_t clf::Config::bufferSizeBytes() const noexcept {
   return _bufferSizeBytes;
 }
