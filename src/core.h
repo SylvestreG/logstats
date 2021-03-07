@@ -11,8 +11,10 @@
 
 #include "buffer_splitter.h"
 #include "config.h"
+#include "data.h"
 #include "file_watcher.h"
 #include "parser.h"
+#include "ui.h"
 
 using Timepoint = std::chrono::time_point<std::chrono::system_clock>;
 
@@ -48,11 +50,16 @@ private:
   std::shared_ptr<clf::Config> _config;
 
   // data
-  std::mutex _dataMutex;
-  std::deque<std::pair<Timepoint, std::string>> _lastTenLines;
+  clf::Data _data;
+
+  // Ui
+  clf::Ui _ui;
 
   // Parser
-  std::vector<clf::Parser> parsers;
+  clf::Parser parsers;
+
+  //handle data
+  boost::asio::thread_pool _handleDataPool;
 };
 
 #endif /* __CORE_H__ */

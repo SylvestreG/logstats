@@ -2,15 +2,13 @@
 // Created by syl on 3/3/21.
 //
 
-#include <imtui/imtui-impl-ncurses.h>
-#include <imtui/imtui.h>
 #include <spdlog/spdlog.h>
 
 #include "core.h"
 
 Core::Core(std::shared_ptr<clf::Config> cfg, std::filesystem::path const &path)
     : _config{cfg}, _fileWatcher(cfg, path),
-      _timer(_ioCtx, cfg->refreshTimeMs()) {
+      _timer(_ioCtx, cfg->refreshTimeMs()), _ui(_data), _handleDataPool(_config->consumerThreadsNumber()) {
   _fileWatcher.setNewBufferCallback(
       [&](std::vector<std::pair<clf::Timepoint, std::string>> &&buffers) {
         this->onNewBuffer(std::move(buffers));
@@ -31,66 +29,7 @@ void Core::run() {
 
   _asioThread = std::thread([&]() { _ioCtx.run(); });
 
-  IMGUI_CHECKVERSION();
-  ImGui::CreateContext();
-  auto screen = ImTui_ImplNcurses_Init(true);
-  ImTui_ImplText_Init();
-
-  bool demo = true;
-  int nframes = 0;
-  float fval = 1.23f;
-  bool quit{false};
-  while (!quit) {
-    ImTui_ImplNcurses_NewFrame();
-    ImTui_ImplText_NewFrame();
-
-    ImGui::NewFrame();
-
-    ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Once);
-    ImGui::SetNextWindowSize(ImVec2(60.0, 10.0), ImGuiCond_Once);
-
-    ImGui::Begin("Global Data");
-    ImGui::End();
-
-    ImGui::SetNextWindowPos(ImVec2(0, 12.0), ImGuiCond_Once);
-    ImGui::SetNextWindowSize(ImVec2(60.0, 10.0), ImGuiCond_Once);
-
-    ImGui::Begin("Monitoring Window");
-    ImGui::End();
-
-    ImGui::SetNextWindowPos(ImVec2(0, 24.0), ImGuiCond_Once);
-    ImGui::SetNextWindowSize(ImVec2(60.0, 10.0), ImGuiCond_Once);
-
-    ImGui::Begin("Alerting");
-    ImGui::End();
-
-    ImGui::SetNextWindowPos(ImVec2(65, 12.0), ImGuiCond_Once);
-    ImGui::SetNextWindowSize(ImVec2(20.0, 10.0), ImGuiCond_Once);
-
-    std::string s =
-        R"foo(     _=,_
-    o_/6 /#\
-    \__ |##/
-     ='|--\
-       /   #'-.
-       \#|_   _'-. /
-datadog |/ \_( # |"
-      C/ ,--___/)foo";
-
-    ImGui::Begin("Menu");
-    ImGui::TextColored(ImVec4(0.5, 0.0, 1.0, 1.0), "%s", s.c_str());
-    if (ImGui::Button("Quit")) {
-      quit = true;
-    }
-    ImGui::End();
-
-    ImGui::Render();
-
-    ImTui_ImplText_RenderDrawData(ImGui::GetDrawData(), screen);
-    ImTui_ImplNcurses_DrawScreen();
-  }
-  ImTui_ImplText_Shutdown();
-  ImTui_ImplNcurses_Shutdown();
+  _ui.render();
 
   spdlog::info("stopping ioctx");
   _ioCtx.stop();
@@ -101,6 +40,11 @@ datadog |/ \_( # |"
 
   spdlog::info("stopping splitter");
   _splitter.stop();
+
+
+  _handleDataPool.join();
+  spdlog::info("stopping data pool");
+
   spdlog::info("clfParser done");
 }
 
@@ -117,8 +61,25 @@ void Core::refreshDisplayCallback() {
 }
 
 void Core::getDataFromSplitter(std::pair<Timepoint, std::string> &&line) {
-  std::lock_guard<std::mutex> lck(_dataMutex);
-  _lastTenLines.push_front(std::move(line));
-  if (_lastTenLines.size() > 10)
-    _lastTenLines.pop_back();
+  boost::asio::post(_handleDataPool, [this, line = std::move(line)]() {
+    auto parsedData = parsers.parseLine(line.second);
+
+    {
+      std::lock_guard<std::mutex> lck(_data._dataMutex);
+      _data._lastTenLines.push_front(line);
+
+      _data._totalLines++;
+      if (parsedData) {
+        _data._lastTenSuccess.push_front(true);
+        _data._totalValidLines++;
+      } else {
+        _data._lastTenSuccess.push_front(false);
+      }
+
+      if (_data._lastTenLines.size() > 10) {
+        _data._lastTenLines.pop_back();
+        _data._lastTenSuccess.pop_back();
+      }
+    }
+  });
 }
