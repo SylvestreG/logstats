@@ -2,12 +2,11 @@
 // Created by syl on 3/3/21.
 //
 
-#include <spdlog/spdlog.h>
-#include <imtui/imtui.h>
 #include <imtui/imtui-impl-ncurses.h>
+#include <imtui/imtui.h>
+#include <spdlog/spdlog.h>
 
 #include "core.h"
-
 
 Core::Core(std::shared_ptr<clf::Config> cfg, std::filesystem::path const &path)
     : _config{cfg}, _fileWatcher(cfg, path),
@@ -16,13 +15,12 @@ Core::Core(std::shared_ptr<clf::Config> cfg, std::filesystem::path const &path)
       [&](std::vector<std::pair<clf::Timepoint, std::string>> &&buffers) {
         this->onNewBuffer(std::move(buffers));
       });
-  _splitter.setNewLineCallback(
-      [&](std::string &&line) { spdlog::info("get new line {}", line); });
+  _splitter.setNewLineCallback([&](std::pair<Timepoint, std::string> &&line) {
+    getDataFromSplitter(std::move(line));
+  });
 }
 
-Core::~Core() {
-
-}
+Core::~Core() {}
 
 void Core::run() {
   _timer.async_wait(
@@ -49,25 +47,41 @@ void Core::run() {
     ImGui::NewFrame();
 
     ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Once);
-    ImGui::SetNextWindowSize(ImVec2(60.0, 10.0) , ImGuiCond_Once);
-
+    ImGui::SetNextWindowSize(ImVec2(60.0, 10.0), ImGuiCond_Once);
 
     ImGui::Begin("Global Data");
-    if (ImGui::Button("Quit")) {
-      quit = true;
-    }
     ImGui::End();
 
     ImGui::SetNextWindowPos(ImVec2(0, 12.0), ImGuiCond_Once);
-    ImGui::SetNextWindowSize(ImVec2(60.0, 10.0) , ImGuiCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(60.0, 10.0), ImGuiCond_Once);
 
     ImGui::Begin("Monitoring Window");
     ImGui::End();
 
-    ImGui::SetNextWindowPos(ImVec2(0, 24.0) , ImGuiCond_Once);
-    ImGui::SetNextWindowSize(ImVec2(60.0, 10.0) , ImGuiCond_Once);
+    ImGui::SetNextWindowPos(ImVec2(0, 24.0), ImGuiCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(60.0, 10.0), ImGuiCond_Once);
 
     ImGui::Begin("Alerting");
+    ImGui::End();
+
+    ImGui::SetNextWindowPos(ImVec2(65, 12.0), ImGuiCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(20.0, 10.0), ImGuiCond_Once);
+
+    std::string s =
+        R"foo(     _=,_
+    o_/6 /#\
+    \__ |##/
+     ='|--\
+       /   #'-.
+       \#|_   _'-. /
+datadog |/ \_( # |"
+      C/ ,--___/)foo";
+
+    ImGui::Begin("Menu");
+    ImGui::TextColored(ImVec4(0.5, 0.0, 1.0, 1.0), "%s", s.c_str());
+    if (ImGui::Button("Quit")) {
+      quit = true;
+    }
     ImGui::End();
 
     ImGui::Render();
@@ -100,4 +114,11 @@ void Core::refreshDisplayCallback() {
   _timer.expires_at(_timer.expiry() + _config->refreshTimeMs());
   _timer.async_wait(
       [&](boost::system::error_code const &) { refreshDisplayCallback(); });
+}
+
+void Core::getDataFromSplitter(std::pair<Timepoint, std::string> &&line) {
+  std::lock_guard<std::mutex> lck(_dataMutex);
+  _lastTenLines.push_front(std::move(line));
+  if (_lastTenLines.size() > 10)
+    _lastTenLines.pop_back();
 }

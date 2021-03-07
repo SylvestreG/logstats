@@ -14,6 +14,8 @@
 #include "file_watcher.h"
 #include "parser.h"
 
+using Timepoint = std::chrono::time_point<std::chrono::system_clock>;
+
 class Core : public boost::enable_shared_from_this<Core> {
 public:
   explicit Core(std::shared_ptr<clf::Config> cfg,
@@ -31,6 +33,7 @@ protected:
 
 private:
   void refreshDisplayCallback();
+  void getDataFromSplitter(std::pair<Timepoint, std::string> &&line);
 
   // Timers
   boost::asio::io_context _ioCtx;
@@ -43,6 +46,10 @@ private:
 
   // Config
   std::shared_ptr<clf::Config> _config;
+
+  // data
+  std::mutex _dataMutex;
+  std::deque<std::pair<Timepoint, std::string>> _lastTenLines;
 
   // Parser
   std::vector<clf::Parser> parsers;

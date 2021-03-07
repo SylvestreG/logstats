@@ -137,7 +137,7 @@ void clf::BufferSplitter::consumeBuffers(std::map<Timepoint, std::string> &&map)
       entry.second.erase(0, pos + 1);
       pos = entry.second.find('\n');
       if (_newLineCb)
-        _newLineCb(std::move(validStr));
+        _newLineCb({entry.first, std::move(validStr)});
     }
 
     if (!entry.second.empty())
