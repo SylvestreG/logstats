@@ -13,7 +13,6 @@
 #include "file_watcher.h"
 
 //TODO
-// - on open seek to the end...
 // - on file change update the fd...
 clf::FileWatcher::FileWatcher(std::shared_ptr<clf::Config> config,
                               const std::filesystem::path &path)
@@ -21,8 +20,13 @@ clf::FileWatcher::FileWatcher(std::shared_ptr<clf::Config> config,
   std::vector<std::string> paths;
   paths.emplace_back(path.string());
 
-  _fd = open(path.c_str(), O_NONBLOCK | O_RDONLY);
+  //open the file
+  _fd = open(path.c_str(), O_NONBLOCK | O_RDONLY | O_APPEND);
   if (_fd <= 0)
+    throw std::runtime_error(strerror(errno));
+
+  //go to the end of file
+  if (lseek(_fd, 0, SEEK_END) == (off_t)-1)
     throw std::runtime_error(strerror(errno));
 
   _monitor = fsw::monitor_factory::create_monitor(
@@ -60,7 +64,7 @@ void clf::FileWatcher::onWrite() {
     size = read(_fd, s.data(), _cfg->bufferSizeBytes());
     if (size > 0) {
       s.resize(size);
-      // TODO lookup for existing buffer with same time
+
       readVector.emplace_back(std::chrono::system_clock::now(), std::move(s));
     }
   } while (size > 0);
