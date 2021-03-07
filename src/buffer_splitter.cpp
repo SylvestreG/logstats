@@ -24,7 +24,11 @@ void clf::BufferSplitter::start() {
 }
 
 void clf::BufferSplitter::stop() {
-  _stopped = true;
+  {
+    std::unique_lock<std::mutex> lck(_buffer._bufferMtx);
+    _stopped = true;
+    _buffer._bufferCv.notify_one();
+  }
   _splitterThread.join();
 }
 

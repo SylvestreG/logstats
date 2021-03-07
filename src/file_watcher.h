@@ -3,6 +3,7 @@
 
 #include <atomic>
 #include <filesystem>
+#include <functional>
 #include <thread>
 
 #include <libfswatch/c++/monitor.hpp>

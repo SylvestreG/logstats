@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <sys/uio.h>
 #include <unistd.h>
+#include <cstring>
 
 #include <libfswatch/c++/event.hpp>
 #include <libfswatch/c++/monitor_factory.hpp>
@@ -70,7 +71,6 @@ void clf::FileWatcher::onWrite() {
 }
 
 clf::FileWatcher::~FileWatcher() {
-  stop();
   delete _monitor;
   close(_fd);
 }

@@ -14,6 +14,5 @@ target_include_directories(clf PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(clf PUBLIC CONAN_PKG::boost CONAN_PKG::fswatch CONAN_PKG::spdlog CONAN_PKG::nlohmann_json CONAN_PKG::lyra)
 
 add_executable(clfMonitor ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
-                          ${CMAKE_CURRENT_SOURCE_DIR}/core.cpp
-                          ${CMAKE_CURRENT_SOURCE_DIR}/ui.cpp)
-target_link_libraries(clfMonitor PRIVATE clf)
+                          ${CMAKE_CURRENT_SOURCE_DIR}/core.cpp)
+target_link_libraries(clfMonitor PRIVATE clf imtui-ncurses)

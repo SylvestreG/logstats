@@ -13,9 +13,8 @@
 #include "config.h"
 #include "file_watcher.h"
 #include "parser.h"
-#include "ui.h"
 
-class Core {
+class Core : public boost::enable_shared_from_this<Core> {
 public:
   explicit Core(std::shared_ptr<clf::Config> cfg,
                 std::filesystem::path const &path);
@@ -36,6 +35,7 @@ private:
   // Timers
   boost::asio::io_context _ioCtx;
   boost::asio::steady_timer _timer;
+  std::thread _asioThread;
 
   // Buffer mgmt
   clf::BufferSplitter _splitter;
@@ -46,9 +46,6 @@ private:
 
   // Parser
   std::vector<clf::Parser> parsers;
-
-  // Ui
-  clf::Ui _ui;
 };
 
 #endif /* __CORE_H__ */

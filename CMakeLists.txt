@@ -23,6 +23,6 @@ conan_cmake_run(REQUIRES bison/3.7.1
                 BASIC_SETUP	CMAKE_TARGETS
                 BUILD    missing)
 
-add_subdirectory(external/cpp-terminal)
+add_subdirectory(external/imtui)
 add_subdirectory(src)
 add_subdirectory(tests)

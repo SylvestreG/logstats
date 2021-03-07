@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
   }
 
   try {
-    std::shared_ptr<clf::Config> cfg;
+    std::shared_ptr<clf::Config> cfg = std::make_shared<clf::Config>();
     if (confFile.empty())
       cfg = std::make_shared<clf::Config>();
     else
