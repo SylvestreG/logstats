@@ -7,6 +7,8 @@
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 #include <type_traits>
+#include <generator/config.h>
+
 
 clf::Config::Config(const std::filesystem::path& file) {
   std::ifstream ifs(file);

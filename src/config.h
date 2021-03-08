@@ -28,8 +28,8 @@ public:
 private:
   uint16_t _batchMaxSizeNumber{100};
   std::chrono::milliseconds _batchMaxTime{100ms};
-  uint8_t _consumerThreadsNumber{4};
-  bool _debugEnabled{true};
+  uint8_t _consumerThreadsNumber{10};
+  bool _debugEnabled{false};
   std::chrono::milliseconds _refreshTimeMs{10s};
   uint16_t _alertThresholdNumber{10};
   uint16_t _bufferSizeBytes{4096};

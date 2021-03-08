@@ -42,6 +42,10 @@ int main(int argc, char **argv) {
     else
       cfg = std::make_shared<clf::Config>(confFile);
 
+    if (cfg->debugEnabled()) {
+      lexerLogger->set_level(spdlog::level::off);
+      parserLogger->set_level(spdlog::level::off);
+    }
     Core c(cfg, inputFile);
     c.run();
   } catch (std::exception const &ex) {
