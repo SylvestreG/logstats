@@ -54,4 +54,4 @@ private:
 
 } // namespace clf
 
-#endif /* __CONFIG_H__ */
+#endif // __CONFIG_H__

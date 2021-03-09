@@ -13,8 +13,8 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#ifndef SCENARIO_CONFIG_H
-#define SCENARIO_CONFIG_H
+#ifndef __SCENARIO_CONFIG_H__
+#define __SCENARIO_CONFIG_H__
 
 #include <chrono>
 #include <filesystem>
@@ -38,4 +38,4 @@ private:
   std::vector<std::pair<uint32_t, std::chrono::milliseconds>> _scenarios{
       {12, 1000ms}, {20, 100ms}, {10, 5ms}, {5, 2000ms}, {100, 500ms}};
 };
-#endif // SCENARIO_CONFIG_H
+#endif // SCENARIO_CON__SCENARIO_CONFIG_H__FIG_H

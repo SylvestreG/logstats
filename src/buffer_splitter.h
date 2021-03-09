@@ -13,8 +13,8 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#ifndef LOGSTATS_BUFFER_SPLITTER_H
-#define LOGSTATS_BUFFER_SPLITTER_H
+#ifndef __BUFFER_SPLITTER_H__
+#define __BUFFER_SPLITTER_H__
 
 #include <chrono>
 #include <condition_variable>
@@ -74,4 +74,4 @@ private:
 };
 } // namespace clf
 
-#endif // LOGSTATS_BUFFER_SPLITTER_H
+#endif // __BUFFER_SPLITTER_H__

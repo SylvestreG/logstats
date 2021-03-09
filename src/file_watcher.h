@@ -57,4 +57,4 @@ private:
 };
 } // namespace clf
 
-#endif /* __FILE_WATCHER_H__ */
+#endif //__FILE_WATCHER_H__

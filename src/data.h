@@ -13,8 +13,8 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#ifndef LOGSTATS_DATA_H
-#define LOGSTATS_DATA_H
+#ifndef __DATA_H__
+#define __DATA_H__
 
 #include <chrono>
 #include <deque>
@@ -106,4 +106,4 @@ struct Data {
 };
 } // namespace clf
 
-#endif // LOGSTATS_DATA_H
+#endif // __DATA_H__

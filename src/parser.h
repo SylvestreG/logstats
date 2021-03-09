@@ -82,4 +82,4 @@ private:
 };
 } // namespace clf
 
-#endif /* __PARSER_H__ */
+#endif // __PARSER_H__

@@ -13,8 +13,8 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#ifndef __CONFIG_H__
-#define __CONFIG_H__
+#ifndef __GENERATOR_CONFIG_H__
+#define __GENERATOR_CONFIG_H__
 
 #include <boost/beast.hpp>
 #include <chrono>
@@ -60,4 +60,4 @@ private:
   uint32_t _size{420};
 };
 
-#endif /* __CONFIG_H__ */
+#endif // __GENERATOR_CONFIG_H__

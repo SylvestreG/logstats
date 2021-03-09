@@ -76,4 +76,4 @@ private:
   boost::asio::thread_pool _handleDataPool;
 };
 
-#endif /* __CORE_H__ */
+#endif // __CORE_H__

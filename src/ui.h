@@ -13,11 +13,12 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#ifndef LOGSTATS_UI_H
-#define LOGSTATS_UI_H
+#ifndef __UI_H__
+#define __UI_H__
 
 #include "data.h"
 
+namespace clf {
 // copy of all data for a render phase to avoid locks
 struct DataRendering {
   char timeStr[80];
@@ -36,7 +37,6 @@ struct DataRendering {
   std::chrono::seconds lastUpdateSec;
 };
 
-namespace clf {
 class Ui {
 public:
   Ui(clf::Data &);
@@ -59,4 +59,4 @@ private:
   DataRendering _renderData;
 };
 };     // namespace clf
-#endif // LOGSTATS_UI_H
+#endif // __UI_H__
