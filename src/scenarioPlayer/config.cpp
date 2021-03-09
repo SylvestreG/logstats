@@ -20,7 +20,8 @@ Config::Config(const std::filesystem::path &file) {
            ++it) {
         if (it->is_array() && it->size() == 2) {
           if ((*it)[0].is_number_integer() && (*it)[1].is_number_integer()) {
-            _scenarios.emplace_back((*it)[0], std::chrono::milliseconds{(*it)[1]});
+            _scenarios.emplace_back((*it)[0],
+                                    std::chrono::milliseconds{(*it)[1]});
           }
         }
       }

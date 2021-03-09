@@ -68,8 +68,7 @@ void clf::GlobalMonitoringData::newLine(
 }
 clf::MonitoringData::MonitoringData(std::shared_ptr<clf::Config> cfg)
     : _versionArray{0, 0, 0}, _cfg(cfg), _totalLines{0}, _totalValidLines{0},
-      _startTime(std::chrono::system_clock::now()) {
-}
+      _startTime(std::chrono::system_clock::now()) {}
 
 uint64_t clf::MonitoringData::totalLines() const { return _totalLines; }
 
