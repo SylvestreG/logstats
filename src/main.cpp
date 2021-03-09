@@ -43,6 +43,9 @@ int main(int argc, char **argv) {
       cfg = std::make_shared<clf::Config>(confFile);
 
     if (cfg->debugEnabled()) {
+      lexerLogger->set_level(spdlog::level::trace);
+      parserLogger->set_level(spdlog::level::trace);
+    } else {
       lexerLogger->set_level(spdlog::level::off);
       parserLogger->set_level(spdlog::level::off);
     }

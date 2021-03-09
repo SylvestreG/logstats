@@ -7,7 +7,7 @@ TEST(config, defaultVal) {
 
   ASSERT_EQ(cfg.alertThresholdNumber(), 10);
   ASSERT_EQ(cfg.batchMaxSizeNumber(), 100);
-  ASSERT_EQ(cfg.batchMaxTime(), 100ms);
+  ASSERT_EQ(cfg.alertTimeMs(), 100ms);
   ASSERT_EQ(cfg.debugEnabled(), true);
   ASSERT_EQ(cfg.refreshTimeMs(), 10s);
   ASSERT_EQ(cfg.consumerThreadsNumber(), 4);
@@ -45,5 +45,5 @@ TEST(config, goodConfig) {
   ASSERT_EQ(cfg.consumerThreadsNumber(), 1);
   ASSERT_EQ(cfg.bufferSizeBytes(), 1);
   ASSERT_EQ(cfg.refreshTimeMs().count(), (1ms).count());
-  ASSERT_EQ(cfg.batchMaxTime().count(), (1ms).count());
+  ASSERT_EQ(cfg.alertTimeMs().count(), (1ms).count());
 }
