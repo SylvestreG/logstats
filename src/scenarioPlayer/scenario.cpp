@@ -3,6 +3,7 @@
 #include <lyra/lyra.hpp>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
+#include <string>
 
 #include "config.h"
 
@@ -13,8 +14,8 @@ int main(int argc, char **argv) {
   try {
     auto cli = lyra::cli() |
                lyra::opt(confFile, "conf")["-c"]["--conf"]("config file") |
-               lyra::opt(confFile, "input")["-i"]["--input"]("input file") |
-               lyra::opt(confFile, "output")["-o"]["--output"]("output file");
+               lyra::opt(inputFile, "input")["-i"]["--input"]("input file") |
+               lyra::opt(outputFile, "output")["-o"]["--output"]("output file");
 
     auto result = cli.parse({argc, argv});
 
@@ -24,7 +25,8 @@ int main(int argc, char **argv) {
     }
 
     if (outputFile.empty() || inputFile.empty()) {
-      spdlog::error("usage : ./clfMonitor logfile.log [-c config.json]");
+      spdlog::error(
+          "usage : ./clfMonitor -i input.log -o output.log [-c config.json]");
       return EXIT_FAILURE;
     }
 
@@ -56,9 +58,21 @@ int main(int argc, char **argv) {
           fmt::format("cannot open {}", outputFile.string()));
     }
 
-    std::string s;
-    while (std::getline(in, s, '=')) {
-      out << s;
+    std::shared_ptr<Config> cfg = std::make_shared<Config>();
+    if (confFile.empty())
+      cfg = std::make_shared<Config>();
+    else
+      cfg = std::make_shared<Config>(confFile);
+
+    std::string line;
+    for (auto s : cfg->scenarios()) {
+      for (int i = 0; i < s.first; i++) {
+        if (!std::getline(in, line))
+          return EXIT_SUCCESS;
+        spdlog::info("found {}", line);
+        out << line << std::endl;
+        std::this_thread::sleep_for(s.second);
+      }
     }
 
   } catch (std::exception const &ex) {

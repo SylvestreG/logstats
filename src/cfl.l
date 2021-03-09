@@ -23,10 +23,13 @@ std::shared_ptr<spdlog::logger> lexerLogger =
 \[                          {lexerLogger->warn("T_OPEN_TAB"); return T_OPEN_TAB;}
 \]                          {lexerLogger->warn("T_CLOSE_TAB"); return T_CLOSE_TAB;}
 \+                          {lexerLogger->warn("T_PLUS"); return T_PLUS;}
+\=                          {lexerLogger->warn("T_EQUAL"); return T_EQUAL;}
 -                           {lexerLogger->warn("T_DASH"); return T_DASH;}
 \/                          {lexerLogger->warn("T_SLASH"); return T_SLASH;}
 :                           {lexerLogger->warn("T_COLON"); return T_COLON;}
 \"                          {lexerLogger->warn("T_QUOTE"); return T_QUOTE;}
+\?                          {lexerLogger->warn("T_QUESTION"); return T_QUESTION;}
+\~                          {lexerLogger->warn("T_TILDE"); return T_TILDE;}
 [[:space:]]HTTP\/1.0\"      {lexerLogger->warn("T_HTTP_1_0"); return T_HTTP_1_0;}
 [[:space:]]HTTP\/1.1\"      {lexerLogger->warn("T_HTTP_1_1"); return T_HTTP_1_1;}
 \"DELETE                    {lexerLogger->warn("T_HTTP_DELETE"); yylval->requestType = boost::beast::http::verb::delete_; return T_HTTP_DELETE;}

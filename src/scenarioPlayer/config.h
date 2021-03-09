@@ -20,7 +20,7 @@ public:
   Config &operator=(Config const &conf) = delete;
 
   // requestStuff
-  [[nodiscard]] std::vector<std::pair<std::chrono::milliseconds, uint32_t>>
+  [[nodiscard]] std::vector<std::pair<uint32_t, std::chrono::milliseconds>>
   scenarios() const noexcept;
 
 private:

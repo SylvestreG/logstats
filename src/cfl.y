@@ -29,7 +29,7 @@ std::shared_ptr<spdlog::logger> parserLogger =
 }
 
 %token T_SPACE T_DOT T_DIGIT T_ALPHANUM T_COLON T_DASH T_ALPHA T_PUNCT
-%token T_OPEN_TAB T_CLOSE_TAB T_PLUS T_SLASH T_QUOTE
+%token T_OPEN_TAB T_CLOSE_TAB T_PLUS T_SLASH T_QUOTE T_EQUAL T_QUESTION T_TILDE
 %token T_HTTP_DELETE T_HTTP_GET T_HTTP_HEAD T_HTTP_POST T_HTTP_PUT T_HTTP_CONNECT T_HTTP_OPTIONS
 %token T_HTTP_TRACE T_HTTP_COPY T_HTTP_LOCK T_HTTP_MKCOL T_HTTP_MOVE T_HTTP_PROPFIND T_HTTP_PROPPATCH
 %token T_HTTP_SEARCH T_HTTP_UNLOCK  T_HTTP_BIND T_HTTP_REBIND T_HTTP_UNBIND T_HTTP_ACL T_HTTP_REPORT
@@ -39,7 +39,8 @@ std::shared_ptr<spdlog::logger> parserLogger =
 %token T_NEW_LINE T_EOF
 %start main_rule
 
-%type<str> T_ALPHA T_PUNCT T_DIGIT T_ALPHANUM anything anythingList pathList path url
+%type<str> T_ALPHA T_PUNCT T_DIGIT T_ALPHANUM anything anythingList
+%type<str> url_valid url_elem url anythingListWithSpace
 %type<requestType> http_request_type
 %%
 
@@ -54,7 +55,9 @@ cfl_rule:
 	| ip userIdentifier userId timestamp request error_code size T_SPACE T_NEW_LINE { parserLogger->info("parse succeed"); }
 	| ip userIdentifier userId timestamp request error_code size T_SPACE T_NEW_LINE T_EOF { parserLogger->info("parse succeed"); }
 	| ip userIdentifier userId timestamp request error_code size T_SPACE T_EOF { parserLogger->info("parse succeed"); }
-	| error T_EOF
+	| ip userIdentifier userId timestamp request error_code size anythingListWithSpace T_NEW_LINE { parserLogger->info("parse succeed"); }
+	| ip userIdentifier userId timestamp request error_code size anythingListWithSpace T_NEW_LINE T_EOF{ parserLogger->info("parse succeed"); }
+	| error T_EOF {  parserLogger->info("parse error"); }
 	;
 
 ip:
@@ -89,8 +92,12 @@ timestamp:
 
 request:
 	T_DASH T_SPACE { parserLogger->info("request"); }
-	| http_request_type pathList T_HTTP_1_0 T_SPACE {parserLogger->info("request"); parser->onRequest($1, $2, clf::httpVersion::httpV10);}
-	| http_request_type pathList T_HTTP_1_1 T_SPACE {parserLogger->info("request"); parser->onRequest($1, $2, clf::httpVersion::httpV11);}
+	| http_request_type url T_HTTP_1_0 T_SPACE {parserLogger->info("request"); parser->onRequest($1, $2, clf::httpVersion::httpV10);}
+	| http_request_type url T_SLASH T_HTTP_1_0 T_SPACE {parserLogger->info("request"); parser->onRequest($1, $2, clf::httpVersion::httpV10);}
+	| http_request_type T_SLASH T_HTTP_1_0 T_SPACE {parserLogger->info("request"); parser->onRequest($1, new std::string("/"), clf::httpVersion::httpV10);}
+	| http_request_type url T_HTTP_1_1 T_SPACE {parserLogger->info("request"); parser->onRequest($1, $2, clf::httpVersion::httpV11);}
+	| http_request_type url T_SLASH T_HTTP_1_1 T_SPACE {parserLogger->info("request"); parser->onRequest($1, $2, clf::httpVersion::httpV11);}
+	| http_request_type T_SLASH T_HTTP_1_1 T_SPACE {parserLogger->info("request"); parser->onRequest($1, new std::string("/"), clf::httpVersion::httpV11);}
 	;
 
 
@@ -107,31 +114,50 @@ hex:
 	| T_DIGIT  { delete $1; }
 	;
 
+anythingListWithSpace:
+	T_SPACE free_anything { }
+	| anythingListWithSpace free_anything { }
+	;
+
 anythingList:
 	anything { $$ = $1; }
 	| anythingList anything { $1->append(*$2); delete $2; $$ = $1;}
 	;
 
-pathList:
-	path
-	| pathList path
-	;
-
-path:
-	T_SLASH url { $2->insert(0, "/"); $$ = $2;}
-	;
 
 url:
-	T_ALPHA {  $$ = $1; }
+	url_elem { $$ = $1;}
+	| url url_elem { delete $2; $$ = $1;}
+	;
+
+
+url_elem:
+	T_SLASH url_valid { $$ = $2;}
+	;
+
+url_valid:
+	T_DASH { $$ = new std::string("-"); }
+	| T_ALPHA {  $$ = $1; }
 	| T_ALPHANUM  { $$ = $1; }
 	| T_DIGIT  { $$ = $1; }
 	| T_DOT	{ $$ = new std::string("."); }
 	| T_PUNCT  { $$ = $1; }
-	| url T_ALPHA  { $1->append(*$2); delete $2; $$ = $1; }
-	| url T_ALPHANUM  { $1->append(*$2); delete $2; $$ = $1; }
-	| url T_DIGIT { $1->append(*$2); delete $2; $$ = $1; }
-	| url T_DOT { $1->append("."); $$ = $1;}
-	| url T_PUNCT { $1->append(*$2); delete $2; $$ = $1; }
+	| T_QUOTE  { $$ = new std::string("\""); }
+	| T_QUESTION  { $$ = new std::string("?"); }
+	| T_TILDE  { $$ = new std::string("~"); }
+	| T_PLUS  { $$ = new std::string("+"); }
+	| T_EQUAL  { $$ = new std::string("="); }
+	| url_valid T_DASH  { $1->append("-"); $$ = $1; }
+	| url_valid T_ALPHA  { $1->append(*$2); delete $2; $$ = $1; }
+	| url_valid T_ALPHANUM  { $1->append(*$2); delete $2; $$ = $1; }
+	| url_valid T_DIGIT { $1->append(*$2); delete $2; $$ = $1; }
+	| url_valid T_DOT { $1->append("."); $$ = $1;}
+	| url_valid T_PUNCT { $1->append(*$2); delete $2; $$ = $1; }
+	| url_valid T_QUOTE  { $1->append("\""); $$ = $1; }
+	| url_valid T_QUESTION  { $1->append("?"); $$ = $1; }
+	| url_valid T_TILDE  { $1->append("~"); $$ = $1; }
+	| url_valid T_PLUS  { $1->append("+"); $$ = $1; }
+	| url_valid T_EQUAL  { $1->append("="); $$ = $1; }
 	;
 
 http_request_type:
@@ -180,10 +206,66 @@ anything:
 	| T_PUNCT { $$ = $1; }
 	| T_OPEN_TAB { $$ = new std::string("["); }
 	| T_CLOSE_TAB { $$ = new std::string("]"); }
-	| T_PLUS { $$ = new std::string("]"); }
-	| T_SLASH { $$ = new std::string("]"); }
-	| T_QUOTE { $$ = new std::string("]"); }
+	| T_PLUS { $$ = new std::string("+"); }
+	| T_EQUAL { $$ = new std::string("="); }
+	| T_SLASH { $$ = new std::string("/"); }
+	| T_QUOTE { $$ = new std::string("\""); }
+	| T_QUESTION { $$ = new std::string("?"); }
+	| T_TILDE { $$ = new std::string("~"); }
 	| http_request_type { $$ = new std::string("]"); }
+
+free_anything:
+	T_DOT
+	| T_DIGIT { delete $1; }
+	| T_ALPHANUM { delete $1; }
+	| T_COLON
+	| T_DASH
+	| T_ALPHA { delete $1; }
+	| T_PUNCT { delete $1; }
+	| T_OPEN_TAB { }
+	| T_CLOSE_TAB
+	| T_PLUS
+	| T_EQUAL
+	| T_SLASH
+	| T_QUOTE
+	| T_QUESTION
+	| T_TILDE
+	| http_request_type
+	| T_HTTP_DELETE
+	| T_HTTP_GET
+	| T_HTTP_HEAD
+	| T_HTTP_POST
+	| T_HTTP_PUT
+	| T_HTTP_CONNECT
+	| T_HTTP_OPTIONS
+        | T_HTTP_TRACE
+        | T_HTTP_COPY
+        | T_HTTP_LOCK
+        | T_HTTP_MKCOL
+        | T_HTTP_MOVE
+        | T_HTTP_PROPFIND
+        | T_HTTP_PROPPATCH
+        | T_HTTP_SEARCH
+        | T_HTTP_UNLOCK
+        | T_HTTP_BIND
+        | T_HTTP_REBIND
+        | T_HTTP_UNBIND
+        | T_HTTP_ACL
+        | T_HTTP_REPORT
+        | T_HTTP_MKACTIVITY
+        | T_HTTP_CHECKOUT
+        | T_HTTP_MERGE
+        | T_HTTP_MSEARCH
+        | T_HTTP_NOTIFY
+        | T_HTTP_SUBSCRIBE
+        | T_HTTP_UNSUBSCRIBE
+        | T_HTTP_PATCH
+        | T_HTTP_PURGE
+        | T_HTTP_MKCALENDAR
+        | T_HTTP_LINK
+        | T_HTTP_UNLINK
+        | T_HTTP_1_0
+        | T_HTTP_1_1
 
 %%
 
