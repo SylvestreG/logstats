@@ -18,7 +18,7 @@ public:
   Config &operator=(Config const &conf) = delete;
 
   [[nodiscard]] uint16_t batchMaxSizeNumber() const noexcept;
-  [[nodiscard]] std::chrono::milliseconds batchMaxTime() const noexcept;
+  [[nodiscard]] std::chrono::milliseconds alertTimeMs() const noexcept;
   [[nodiscard]] uint8_t consumerThreadsNumber() const noexcept;
   [[nodiscard]] bool debugEnabled() const noexcept;
   [[nodiscard]] std::chrono::milliseconds refreshTimeMs() const noexcept;
@@ -27,7 +27,7 @@ public:
 
 private:
   uint16_t _batchMaxSizeNumber{100};
-  std::chrono::milliseconds _batchMaxTime{100ms};
+  std::chrono::milliseconds _alertTimeMs{2ms};
   uint8_t _consumerThreadsNumber{10};
   bool _debugEnabled{false};
   std::chrono::milliseconds _refreshTimeMs{10s};

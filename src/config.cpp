@@ -41,7 +41,7 @@ clf::Config::Config(const std::filesystem::path& file) {
 
     getParam("batchMaxSizeNumber", _batchMaxSizeNumber, 0,
              std::numeric_limits<uint16_t>::max());
-    getParam("batchMaxTimeMs", _batchMaxTime, 0,
+    getParam("batchMaxTimeMs", _alertTimeMs, 0,
              std::numeric_limits<uint16_t>::max());
     getParam("consumerThreadsNumber", _consumerThreadsNumber, 0,
              std::numeric_limits<uint8_t>::max());
@@ -69,8 +69,8 @@ uint16_t clf::Config::batchMaxSizeNumber() const noexcept {
   return _batchMaxSizeNumber;
 }
 
-std::chrono::milliseconds clf::Config::batchMaxTime() const noexcept {
-  return _batchMaxTime;
+std::chrono::milliseconds clf::Config::alertTimeMs() const noexcept {
+  return _alertTimeMs;
 }
 
 uint8_t clf::Config::consumerThreadsNumber() const noexcept {
