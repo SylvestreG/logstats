@@ -79,6 +79,9 @@ Config::Config(const std::filesystem::path &file) {
       spdlog::error("parse pb: {} ", ex.what());
     throw ex;
   }
+
+  if (_httpVersion != "HTTP/1.0" && _httpVersion != "HTTP/1.1")
+    _httpVersion = "HTTP/1.1";
 }
 
 uint16_t Config::requestNumber() const noexcept { return _requestNumber; }

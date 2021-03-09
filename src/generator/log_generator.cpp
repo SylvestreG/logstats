@@ -1,3 +1,4 @@
+#include <fstream>
 #include <lyra/lyra.hpp>
 #include <spdlog/spdlog.h>
 
@@ -28,6 +29,9 @@ int main(int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
+  std::ofstream out;
+  out.open(inputFile, std::ios::app);
+
   try {
     std::shared_ptr<Config> cfg = std::make_shared<Config>();
     if (confFile.empty())
@@ -36,11 +40,12 @@ int main(int argc, char **argv) {
       cfg = std::make_shared<Config>(confFile);
 
     std::string output;
-    output = fmt::format("{} {} {} {{}} \"{} {} {}\" {} {}", cfg->ipAddr(),
-                         cfg->userIdentifier(), cfg->userId(),
-                         boost::beast::http::to_string(cfg->httpVerb()).to_string(),
-                         cfg->path().string(), cfg->httpVersion(),
-                         static_cast<int>(cfg->httpStatus()), cfg->size());
+    output =
+        fmt::format("{} {} {} [{{}}] \"{} {} {}\" {} {}", cfg->ipAddr(),
+                    cfg->userIdentifier(), cfg->userId(),
+                    boost::beast::http::to_string(cfg->httpVerb()).to_string(),
+                    cfg->path().string(), cfg->httpVersion(),
+                    static_cast<int>(cfg->httpStatus()), cfg->size());
     char buffer[80];
 
     for (int i = 0; i < cfg->requestNumber(); i++) {
@@ -49,7 +54,7 @@ int main(int argc, char **argv) {
       std::time_t now_c = std::chrono::system_clock::to_time_t(now);
       std::tm now_tm = *std::localtime(&now_c);
       std::strftime(buffer, 80, "%d/%b/%Y:%H:%M:%S %z", &now_tm);
-      spdlog::info(output, buffer);
+      out << fmt::format(output, buffer) << std::endl;
 
       std::this_thread::sleep_for(cfg->delayBetweenRequestMs());
     }

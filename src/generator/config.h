@@ -39,7 +39,7 @@ private:
 
   boost::beast::http::verb _httpVerb{boost::beast::http::verb::get};
   std::filesystem::path _path{"/index.html"};
-  std::string _httpVersion{"HTTP 1/1"};
+  std::string _httpVersion{"HTTP/1.1"};
 
   boost::beast::http::status _status{boost::beast::http::status::ok};
   uint32_t _size{42};
