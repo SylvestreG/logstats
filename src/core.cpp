@@ -71,8 +71,28 @@ void Core::getDataFromSplitter(std::pair<Timepoint, std::string> &&line) {
 
     {
       std::lock_guard<std::mutex> lck(_data._dataMutex);
+
       _data._globalData.newLine(parsedData, {line.first, line.second});
       _data._currentFrameData.newLine(parsedData, line.first);
+
+      // alert need to update timer to starving point
+      // need to take the ts of nbThreshold -1 and add time.
+      if (_data._globalData.alertOn()) {
+        _alertOffTimer.cancel();
+
+        auto alertsTs = _data._globalData.alertTs();
+        auto alertOffTs =
+            alertsTs[alertsTs.size() - (_config->alertThresholdNumber() - 1)] +
+            _config->alertTimeMs();
+
+        _alertOffTimer.expires_after(
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                alertOffTs - std::chrono::system_clock::now()));
+        _alertOffTimer.async_wait([&](boost::system::error_code const &) {
+          std::lock_guard<std::mutex> lck(_data._dataMutex);
+          _data._globalData.setAlertOff();
+        });
+      }
     }
   });
 }

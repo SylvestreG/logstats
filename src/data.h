@@ -54,6 +54,9 @@ public:
   std::unordered_map<boost::beast::http::status, uint64_t> &statusMap();
   std::unordered_map<std::string, uint64_t> &pathHitMap();
   std::array<uint64_t, 3> &versionArray();
+  std::vector<Timepoint>& alertTs();
+  bool alertOn();
+  void setAlertOff();
 
 private:
   std::deque<std::pair<Timepoint, std::string>> _lastTenLines;

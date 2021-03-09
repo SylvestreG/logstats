@@ -115,5 +115,14 @@ clf::GlobalMonitoringData::pathHitMap() {
 std::array<uint64_t, 3> &clf::GlobalMonitoringData::versionArray() {
   return _versionArray;
 }
+
+bool clf::GlobalMonitoringData::alertOn() { return _alertOn; }
+
+vector<clf::Timepoint> &clf::GlobalMonitoringData::alertTs() {
+  return _alertTs;
+}
+
+void clf::GlobalMonitoringData::setAlertOff() { _alertOn = false; }
+
 clf::Data::Data(std::shared_ptr<clf::Config> cfg)
     : _globalData(cfg), _currentFrameData(cfg), _lastFrameFrameData(cfg) {}
