@@ -219,15 +219,30 @@ void clf::Ui::renderMonitoringStats() {
       ImGui::EndTabItem();
     }
     if (ImGui::BeginTabItem("verbs")) {
-      ImGui::Text("This is the Broccoli tab!\nblah blah blah blah blah");
+      std::lock_guard<std::mutex> lck(_data._dataMutex);
+      for (auto it = _data._lastFrameFrameData.orderedVerbMap().rbegin();
+           it != _data._lastFrameFrameData.orderedVerbMap().rend(); ++it)
+        ImGui::Text(
+            "%s (%lu)",
+            boost::beast::http::to_string(it->second).to_string().c_str(),
+            it->first);
+
       ImGui::EndTabItem();
     }
     if (ImGui::BeginTabItem("status")) {
-      ImGui::Text("This is the Broccoli tab!\nblah blah blah blah blah");
+      std::lock_guard<std::mutex> lck(_data._dataMutex);
+      for (auto it = _data._lastFrameFrameData.orderedStatusMap().rbegin();
+           it != _data._lastFrameFrameData.orderedStatusMap().rend(); ++it)
+        ImGui::Text(
+            "%s (%lu)",
+            boost::beast::http::obsolete_reason(it->second).to_string().c_str(),
+            it->first);
       ImGui::EndTabItem();
     }
     if (ImGui::BeginTabItem("paths")) {
-      ImGui::Text("This is the Cucumber tab!\nblah blah blah blah blah");
+      for (auto it = _data._lastFrameFrameData.orderedPathMap().rbegin();
+           it != _data._lastFrameFrameData.orderedPathMap().rend(); ++it)
+        ImGui::Text("%s (%lu)", it->second.c_str(), it->first);
       ImGui::EndTabItem();
     }
     ImGui::EndTabBar();

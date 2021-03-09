@@ -1,9 +1,9 @@
 {
   "batchMaxSizeNumber": 100,
-  "alertTimeMs": 2000,
+  "alertTimeMs": 5000,
   "bufferSizeBytes": 4096,
   "consumerThreadsNumber": 4,
   "debugEnabled": true,
-  "refreshTimeMs": 10000,
+  "refreshTimeMs": 3000,
   "alertThresholdNumber" : 10
 }

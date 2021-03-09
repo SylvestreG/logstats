@@ -132,7 +132,7 @@ url:
 
 
 url_elem:
-	T_SLASH url_valid { $$ = $2;}
+	T_SLASH url_valid { $2->insert(0, "/"); $$ = $2;}
 	;
 
 url_valid:

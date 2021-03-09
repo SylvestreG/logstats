@@ -22,6 +22,14 @@ void clf::MonitoringData::newLine(std::optional<ClfLine> &newObj,
     if (newObj->version)
       auto it = _versionArray[static_cast<int>(*newObj->version)]++;
 
+    if (newObj->path) {
+      auto it = _pathMap.find(*newObj->path);
+      if (it == _pathMap.end())
+        _pathMap.emplace(*newObj->path, 1);
+      else
+        it->second++;
+    }
+
     if (newObj->statusCode) {
       auto it = _statusMap.find(*newObj->statusCode);
       if (it == _statusMap.end())
@@ -60,7 +68,8 @@ void clf::GlobalMonitoringData::newLine(
 }
 clf::MonitoringData::MonitoringData(std::shared_ptr<clf::Config> cfg)
     : _versionArray{0, 0, 0}, _cfg(cfg), _totalLines{0}, _totalValidLines{0},
-      _startTime(std::chrono::system_clock::now()) {}
+      _startTime(std::chrono::system_clock::now()) {
+}
 
 uint64_t clf::MonitoringData::totalLines() const { return _totalLines; }
 
@@ -78,13 +87,20 @@ clf::MonitoringData::operator=(const clf::MonitoringData &data) {
     this->_totalLines = data._totalLines;
     this->_totalSize = data.totalSize();
 
-    for (auto &v : _verbMap)
+    _orderedVerb.clear();
+    _orderedStatus.clear();
+    _orderedPath.clear();
+    _verbMap.clear();
+    _statusMap.clear();
+    _pathMap.clear();
+
+    for (auto &v : data._verbMap)
       this->_orderedVerb.emplace(v.second, v.first);
 
-    for (auto &s : _statusMap)
+    for (auto &s : data._statusMap)
       this->_orderedStatus.emplace(s.second, s.first);
 
-    for (auto &p : _pathMap)
+    for (auto &p : data._pathMap)
       this->_orderedPath.emplace(p.second, p.first);
   }
   return *this;
