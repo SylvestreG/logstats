@@ -25,6 +25,7 @@ std::shared_ptr<spdlog::logger> parserLogger =
 %union {
   std::string *str;
   boost::beast::http::verb requestType;
+  clf::httpVersion version;
 }
 
 %token T_SPACE T_DOT T_DIGIT T_ALPHANUM T_COLON T_DASH T_ALPHA T_PUNCT
@@ -33,13 +34,13 @@ std::shared_ptr<spdlog::logger> parserLogger =
 %token T_HTTP_TRACE T_HTTP_COPY T_HTTP_LOCK T_HTTP_MKCOL T_HTTP_MOVE T_HTTP_PROPFIND T_HTTP_PROPPATCH
 %token T_HTTP_SEARCH T_HTTP_UNLOCK  T_HTTP_BIND T_HTTP_REBIND T_HTTP_UNBIND T_HTTP_ACL T_HTTP_REPORT
 %token T_HTTP_MKACTIVITY T_HTTP_CHECKOUT T_HTTP_MERGE T_HTTP_MSEARCH T_HTTP_NOTIFY T_HTTP_SUBSCRIBE
-%token T_HTTP_UNSUBSCRIBE T_HTTP_PATCH T_HTTP_URGE T_HTTP_MKCALENDAR T_HTTP_LINK T_HTTP_UNLINK
+%token T_HTTP_UNSUBSCRIBE T_HTTP_PATCH T_HTTP_PURGE T_HTTP_MKCALENDAR T_HTTP_LINK T_HTTP_UNLINK
 %token T_HTTP_1_0 T_HTTP_1_1
 %token T_NEW_LINE T_EOF
 %start main_rule
 
-%type<str> T_ALPHA T_PUNCT T_DIGIT T_ALPHANUM anything anythingList
-
+%type<str> T_ALPHA T_PUNCT T_DIGIT T_ALPHANUM anything anythingList pathList path url
+%type<requestType> http_request_type
 %%
 
 main_rule:
@@ -87,8 +88,8 @@ timestamp:
 
 request:
 	T_DASH T_SPACE { parserLogger->info("request"); }
-	| http_request_type pathList T_HTTP_1_0 T_SPACE {parserLogger->info("request");}
-	| http_request_type pathList T_HTTP_1_1 T_SPACE {parserLogger->info("request");}
+	| http_request_type pathList T_HTTP_1_0 T_SPACE {parserLogger->info("request"); parser->onRequest($1, $2, clf::httpVersion::httpV10);}
+	| http_request_type pathList T_HTTP_1_1 T_SPACE {parserLogger->info("request"); parser->onRequest($1, $2, clf::httpVersion::httpV11);}
 	;
 
 
@@ -116,56 +117,57 @@ pathList:
 	;
 
 path:
-	T_SLASH url
+	T_SLASH url { $2->insert(0, "/"); $$ = $2;}
 	;
 
 url:
-	T_ALPHA { delete $1; }
-	| T_ALPHANUM  { delete $1; }
-	| T_DIGIT  { delete $1; }
-	| T_DOT
-	| T_PUNCT  { delete $1; }
-	| url T_ALPHA  { delete $2; }
-	| url T_ALPHANUM  { delete $2; }
-	| url T_DIGIT { delete $2; }
-	| url T_DOT
-	| url T_PUNCT { delete $2; }
+	T_ALPHA {  $$ = $1; }
+	| T_ALPHANUM  { $$ = $1; }
+	| T_DIGIT  { $$ = $1; }
+	| T_DOT	{ $$ = new std::string("."); }
+	| T_PUNCT  { $$ = $1; }
+	| url T_ALPHA  { $1->append(*$2); delete $2; $$ = $1; }
+	| url T_ALPHANUM  { $1->append(*$2); delete $2; $$ = $1; }
+	| url T_DIGIT { $1->append(*$2); delete $2; $$ = $1; }
+	| url T_DOT { $1->append("."); $$ = $1;}
+	| url T_PUNCT { $1->append(*$2); delete $2; $$ = $1; }
 	;
 
 http_request_type:
-	T_HTTP_DELETE
-	| T_HTTP_GET
-	| T_HTTP_HEAD
-	| T_HTTP_POST
-	| T_HTTP_PUT
-	| T_HTTP_CONNECT
-	| T_HTTP_OPTIONS
-	| T_HTTP_TRACE
-	| T_HTTP_COPY
-	| T_HTTP_LOCK
-	| T_HTTP_MKCOL
-	| T_HTTP_MOVE
-	| T_HTTP_PROPFIND
-	| T_HTTP_PROPPATCH
-	| T_HTTP_SEARCH
-	| T_HTTP_UNLOCK
-	| T_HTTP_BIND
-	| T_HTTP_REBIND
-	| T_HTTP_UNBIND
-	| T_HTTP_ACL
-	| T_HTTP_REPORT
-	| T_HTTP_MKACTIVITY
-	| T_HTTP_CHECKOUT
-	| T_HTTP_MERGE
-	| T_HTTP_MSEARCH
-	| T_HTTP_NOTIFY
-	| T_HTTP_SUBSCRIBE
-	| T_HTTP_UNSUBSCRIBE
-	| T_HTTP_PATCH
-	| T_HTTP_URGE
-	| T_HTTP_MKCALENDAR
-	| T_HTTP_LINK
-	| T_HTTP_UNLINK
+	T_HTTP_DELETE T_SPACE { $$ = boost::beast::http::verb::delete_; }
+	| T_HTTP_GET T_SPACE { $$ = boost::beast::http::verb::get; }
+	| T_HTTP_HEAD T_SPACE { $$ = boost::beast::http::verb::head; }
+	| T_HTTP_POST T_SPACE { $$ = boost::beast::http::verb::post; }
+	| T_HTTP_PUT T_SPACE { $$ = boost::beast::http::verb::put; }
+	| T_HTTP_CONNECT T_SPACE { $$ = boost::beast::http::verb::connect; }
+	| T_HTTP_OPTIONS T_SPACE { $$ = boost::beast::http::verb::options; }
+	| T_HTTP_TRACE T_SPACE { $$ = boost::beast::http::verb::trace; }
+	| T_HTTP_COPY T_SPACE { $$ = boost::beast::http::verb::copy; }
+	| T_HTTP_LOCK T_SPACE { $$ = boost::beast::http::verb::lock; }
+	| T_HTTP_MKCOL T_SPACE { $$ = boost::beast::http::verb::mkcol; }
+	| T_HTTP_MOVE T_SPACE { $$ = boost::beast::http::verb::move; }
+	| T_HTTP_PROPFIND T_SPACE { $$ = boost::beast::http::verb::propfind; }
+	| T_HTTP_PROPPATCH T_SPACE { $$ = boost::beast::http::verb::proppatch; }
+	| T_HTTP_SEARCH T_SPACE { $$ = boost::beast::http::verb::search; }
+	| T_HTTP_UNLOCK T_SPACE { $$ = boost::beast::http::verb::unlock; }
+	| T_HTTP_BIND T_SPACE { $$ = boost::beast::http::verb::bind; }
+	| T_HTTP_REBIND T_SPACE { $$ = boost::beast::http::verb::rebind; }
+	| T_HTTP_UNBIND T_SPACE { $$ = boost::beast::http::verb::unbind; }
+	| T_HTTP_ACL T_SPACE { $$ = boost::beast::http::verb::acl; }
+	| T_HTTP_REPORT T_SPACE { $$ = boost::beast::http::verb::report; }
+	| T_HTTP_MKACTIVITY T_SPACE { $$ = boost::beast::http::verb::mkactivity; }
+	| T_HTTP_CHECKOUT T_SPACE { $$ = boost::beast::http::verb::checkout; }
+	| T_HTTP_MERGE T_SPACE { $$ = boost::beast::http::verb::merge; }
+	| T_HTTP_MSEARCH T_SPACE { $$ = boost::beast::http::verb::msearch; }
+	| T_HTTP_NOTIFY T_SPACE { $$ = boost::beast::http::verb::notify; }
+	| T_HTTP_SUBSCRIBE T_SPACE { $$ = boost::beast::http::verb::subscribe; }
+	| T_HTTP_UNSUBSCRIBE T_SPACE { $$ = boost::beast::http::verb::unsubscribe; }
+	| T_HTTP_PATCH T_SPACE { $$ = boost::beast::http::verb::patch; }
+	| T_HTTP_PURGE T_SPACE { $$ = boost::beast::http::verb::purge; }
+	| T_HTTP_MKCALENDAR T_SPACE { $$ = boost::beast::http::verb::mkcalendar; }
+	| T_HTTP_LINK T_SPACE { $$ = boost::beast::http::verb::link; }
+	| T_HTTP_UNLINK T_SPACE { $$ = boost::beast::http::verb::unlink; }
+	| error T_SPACE  { $$ = boost::beast::http::verb::unknown; }
 
 anything:
 	T_DOT { $$ = new std::string("."); }

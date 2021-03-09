@@ -21,14 +21,17 @@ void clf::Parser::onUserId(std::string *userId) noexcept {
   delete userId;
 }
 
-void clf::Parser::onTimeStamp(std::string *) noexcept {}
+void clf::Parser::onTimeStamp(std::string *timestamp) noexcept {
+  _currentLine.timestamp = *timestamp;
+  delete timestamp;
+}
 
-void clf::Parser::onRequest(boost::beast::http::verb request,
-                            std::filesystem::path path,
+void clf::Parser::onRequest(boost::beast::http::verb request, std::string *path,
                             httpVersion version) noexcept {
-  parserLogger->info("userId found:{}",
-               boost::beast::http::to_string(request).to_string(),
-               path.string(), clf::to_string(version));
+  _currentLine.verb = request;
+  _currentLine.path = *path;
+  _currentLine.version = version;
+  delete path;
 }
 
 void clf::Parser::onObjectSize(size_t size) noexcept {
@@ -36,6 +39,5 @@ void clf::Parser::onObjectSize(size_t size) noexcept {
 }
 
 void clf::Parser::onErrorCode(boost::beast::http::status st) noexcept {
-  parserLogger->info("error_code:{}",
-               boost::beast::http::obsolete_reason(st).to_string());
+  _currentLine.statusCode = st;
 }

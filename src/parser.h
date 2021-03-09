@@ -33,8 +33,10 @@ struct ClfLine {
   optional<clf::address> ipAddr;
   optional<string> userIdentifier;
   optional<string> userId;
-  optional<time_point<system_clock, seconds>> timestamp;
-  optional<boost::beast::http::verb> resquestType;
+  optional<string> timestamp;
+  optional<boost::beast::http::verb> verb;
+  optional<std::filesystem::path> path;
+  optional<httpVersion> version;
   optional<boost::beast::http::status> statusCode;
   optional<std::size_t> objectSize;
 };
@@ -53,7 +55,7 @@ public:
   void onUserIdentifier(std::string *) noexcept;
   void onUserId(std::string *) noexcept;
   void onTimeStamp(std::string *) noexcept;
-  void onRequest(boost::beast::http::verb, std::filesystem::path path,
+  void onRequest(boost::beast::http::verb, std::string *path,
                  httpVersion version) noexcept;
   void onObjectSize(size_t) noexcept;
   void onErrorCode(boost::beast::http::status) noexcept;
