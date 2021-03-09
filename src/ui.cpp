@@ -66,38 +66,94 @@ void clf::Ui::renderGlobalStats() {
   ImGui::SetNextWindowPos(ImVec2(100, 0), ImGuiCond_Once);
   ImGui::SetNextWindowSize(ImVec2(60.0, 13.0), ImGuiCond_Once);
 
-  ImGui::Begin("Global Data");
-  ImGui::TextColored(ImVec4(0.59, 1.0, 0.8, 1.0), "%s",
-                     fmt::format("last 10 messages:   Valid {}/{}\n",
-                                 _data._totalValidLines, _data._totalLines)
-                         .c_str());
+  uint64_t nbGet, nbPost, nbPut, nbPatch, nbDelete, nbUnknown;
+  uint64_t totalValidLines;
+  uint64_t totalLines;
+  uint64_t totalSize;
+
+  auto findNbVerb = [&](boost::beast::http::verb v) -> uint64_t {
+    auto it = _data._globalData.verbMap().find(v);
+
+    if (it == _data._globalData.verbMap().end())
+      return 0;
+
+    return it->second;
+  };
 
   {
     std::lock_guard<std::mutex> lck(_data._dataMutex);
+    totalValidLines = _data._globalData.totalValidLines();
+    totalLines = _data._globalData.totalLines();
+    totalSize = 0;
+    nbGet = findNbVerb(boost::beast::http::verb::get);
+    nbPost = findNbVerb(boost::beast::http::verb::post);
+    nbPut = findNbVerb(boost::beast::http::verb::put);
+    nbPatch = findNbVerb(boost::beast::http::verb::patch);
+    nbDelete = findNbVerb(boost::beast::http::verb::delete_);
+    nbUnknown = findNbVerb(boost::beast::http::verb::unknown);
+  }
 
-    int i{0};
-    for (auto &s : _data._lastTenLines) {
-      if (_data._lastTenSuccess[i])
+  ImGui::Begin("Global Data");
+  if (ImGui::BeginTabBar("info", ImGuiTabBarFlags_None)) {
+    if (ImGui::BeginTabItem("stats")) {
+      {
         ImGui::TextColored(
-            ImVec4(0.0, 1.0, 0.0, 1.0), "%s",
-            fmt::format("{} | {}",
-                        std::chrono::duration_cast<std::chrono::seconds>(
-                            s.first - _data._appStartTime)
-                            .count(),
-                        s.second)
+            ImVec4(0.50, 1.0, 0.8, 1.0), "%s",
+            fmt::format("Valid request {}/{}", totalValidLines, totalLines)
                 .c_str());
-      else
-        ImGui::TextColored(
-            ImVec4(1.0, 0.0, 0.0, 1.0), "%s",
-            fmt::format("{} | {}",
-                        std::chrono::duration_cast<std::chrono::seconds>(
-                            s.first - _data._appStartTime)
-                            .count(),
-                        s.second)
-                .c_str());
-      i++;
+        ImGui::Separator();
+        ImGui::TextColored(ImVec4(0.59, 1.0, 0.8, 1.0), "%s",
+                           fmt::format("total size {}", totalSize).c_str());
+      }
+      ImGui::EndTabItem();
+    }
+
+    if (ImGui::BeginTabItem("verbs")) {
+      {
+        ImGui::TextColored(ImVec4(0.50, 1.0, 0.8, 1.0), "%s",
+                           fmt::format("GET ({})", nbGet).c_str());
+        ImGui::Separator();
+        ImGui::TextColored(ImVec4(0.59, 1.0, 0.8, 1.0), "%s",
+                           fmt::format("POST ({})", nbPost).c_str());
+        ImGui::Separator();
+        ImGui::TextColored(ImVec4(0.50, 1.0, 0.8, 1.0), "%s",
+                           fmt::format("PUT ({})", nbPut).c_str());
+        ImGui::Separator();
+        ImGui::TextColored(ImVec4(0.59, 1.0, 0.8, 1.0), "%s",
+                           fmt::format("PATCH ({})", nbPatch).c_str());
+        ImGui::Separator();
+        ImGui::TextColored(ImVec4(0.50, 1.0, 0.8, 1.0), "%s",
+                           fmt::format("DELETE ({})", nbDelete).c_str());
+        ImGui::Separator();
+        ImGui::TextColored(ImVec4(0.59, 1.0, 0.8, 1.0), "%s",
+                           fmt::format("UNKNOWN ({})", nbUnknown).c_str());
+      }
+
+      ImGui::EndTabItem();
+    }
+    if (ImGui::BeginTabItem("stats")) {
+      {
+        std::lock_guard<std::mutex> lck(_data._dataMutex);
+
+        int i{0};
+        ImVec4 green{0.0, 1.0, 0.0, 1.0};
+        ImVec4 red{1.0, 0.0, 0.0, 1.0};
+        for (auto &s : _data._globalData.lastTenLines()) {
+          ImGui::TextColored(
+              (_data._globalData.lastTenSuccess()[i]) ? green : red, "%s",
+              fmt::format("{} | {}",
+                          std::chrono::duration_cast<std::chrono::seconds>(
+                              s.first - _data._globalData.startTime())
+                              .count(),
+                          s.second)
+                  .c_str());
+          i++;
+        }
+      }
+      ImGui::EndTabItem();
     }
   }
+  ImGui::EndTabBar();
   ImGui::End();
 }
 
@@ -105,8 +161,23 @@ void clf::Ui::renderMonitoringStats() {
   ImGui::SetNextWindowPos(ImVec2(0, 12.0), ImGuiCond_Once);
   ImGui::SetNextWindowSize(ImVec2(60.0, 10.0), ImGuiCond_Once);
 
-  ImGui::Begin("Monitoring Window");
-  ImGui::End();
+  ImGui::Begin("monitoring");
+  if (ImGui::BeginTabBar("MyTabBar", ImGuiTabBarFlags_None)) {
+    if (ImGui::BeginTabItem("Avocado")) {
+      ImGui::Text("This is the Avocado tab!\nblah blah blah blah blah");
+      ImGui::EndTabItem();
+    }
+    if (ImGui::BeginTabItem("Broccoli")) {
+      ImGui::Text("This is the Broccoli tab!\nblah blah blah blah blah");
+      ImGui::EndTabItem();
+    }
+    if (ImGui::BeginTabItem("Cucumber")) {
+      ImGui::Text("This is the Cucumber tab!\nblah blah blah blah blah");
+      ImGui::EndTabItem();
+    }
+    ImGui::EndTabBar();
+    ImGui::End();
+  }
 }
 
 void clf::Ui::renderAlerts() {
@@ -121,5 +192,18 @@ void clf::Ui::renderAlerts() {
 
   ImGui::Begin("Alerting");
   ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), "%s", warn.c_str());
+  ImGui::Text("Without border:");
+  ImGui::Columns(3, "mycolumns3", false); // 3-ways, no border
+  ImGui::Separator();
+  for (int n = 0; n < 14; n++) {
+    char label[32];
+    sprintf(label, "Item %d", n);
+    if (ImGui::Selectable(label)) {
+    }
+    // if (ImGui::Button(label, ImVec2(-FLT_MIN,0.0f))) {}
+    ImGui::NextColumn();
+  }
+  ImGui::Columns(1);
+  ImGui::Separator();
   ImGui::End();
 }

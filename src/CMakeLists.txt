@@ -17,5 +17,6 @@ target_link_libraries(clf PUBLIC CONAN_PKG::boost CONAN_PKG::fswatch CONAN_PKG::
 
 add_executable(clfMonitor ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/core.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/data.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/ui.cpp)
 target_link_libraries(clfMonitor PRIVATE clf imtui-ncurses CONAN_PKG::lyra)

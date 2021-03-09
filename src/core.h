@@ -39,7 +39,8 @@ private:
 
   // Timers
   boost::asio::io_context _ioCtx;
-  boost::asio::steady_timer _timer;
+  boost::asio::steady_timer _refreshTimer;
+  boost::asio::steady_timer _alertOffTimer;
   std::thread _asioThread;
 
   // Buffer mgmt
