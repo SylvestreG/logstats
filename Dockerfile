@@ -1,4 +1,4 @@
-FROM debian:buster
+FROM debian:unstable
 
 RUN apt-get update -y && \
 	apt-get install -y cmake build-essential g++ python3-pip libncurses-dev bison flex m4 && \
