@@ -54,6 +54,7 @@ cfl_rule:
 	| ip userIdentifier userId timestamp request error_code size T_SPACE T_NEW_LINE { parserLogger->info("parse succeed"); }
 	| ip userIdentifier userId timestamp request error_code size T_SPACE T_NEW_LINE T_EOF { parserLogger->info("parse succeed"); }
 	| ip userIdentifier userId timestamp request error_code size T_SPACE T_EOF { parserLogger->info("parse succeed"); }
+	| error T_EOF
 	;
 
 ip:
@@ -194,6 +195,7 @@ static void yyerror(YYLTYPE *yy, yyscan_t scanner, clf::Parser *parser, const ch
 }
 
 std::optional<clf::ClfLine> clf::Parser::parseLine(std::string_view str) {
+	reset();
 	yyscan_t scanner;
 	yylex_init(&scanner);
 	yylex_init_extra(this, &scanner);

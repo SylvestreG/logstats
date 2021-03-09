@@ -48,6 +48,7 @@ public:
   Parser(Parser const &) = delete;
   Parser &operator=(Parser const &) = delete;
 
+  void reset();
   std::optional<ClfLine> parseLine(std::string_view str);
 
   // interfaces called by yacc

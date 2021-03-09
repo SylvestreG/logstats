@@ -41,3 +41,15 @@ void clf::Parser::onObjectSize(size_t size) noexcept {
 void clf::Parser::onErrorCode(boost::beast::http::status st) noexcept {
   _currentLine.statusCode = st;
 }
+
+void clf::Parser::reset() {
+  _currentLine.ipAddr = std::nullopt;
+  _currentLine.userIdentifier = std::nullopt;
+  _currentLine.userId = std::nullopt;
+  _currentLine.timestamp = std::nullopt;
+  _currentLine.verb = std::nullopt;
+  _currentLine.path = std::nullopt;
+  _currentLine.version = std::nullopt;
+  _currentLine.statusCode = std::nullopt;
+  _currentLine.objectSize = std::nullopt;
+}

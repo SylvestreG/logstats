@@ -1,6 +1,6 @@
 {
-  "requestNumber": 100,
-  "delayBetweenRequestMs": 100,
+  "requestNumber": 1000,
+  "delayBetweenRequestMs": 10,
   "ipAddr": "127.0.0.1",
   "userIdentifier": "userIdentifier",
   "userId": "syl",

@@ -83,8 +83,8 @@ void Core::checkAlarmCallback() {
 
 void Core::getDataFromSplitter(std::pair<Timepoint, std::string> &&line) {
   boost::asio::post(_handleDataPool, [this, line = std::move(line)]() {
+    clf::Parser parsers;
     auto parsedData = parsers.parseLine(line.second);
-
     {
       std::lock_guard<std::mutex> lck(_data._dataMutex);
 

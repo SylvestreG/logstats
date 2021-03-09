@@ -2,6 +2,7 @@ find_package(BISON 3.0.0)
 find_package(FLEX 2.6)
 
 add_subdirectory(generator)
+add_subdirectory(scenarioPlayer)
 
 bison_target(cflParser cfl.y ${CMAKE_BINARY_DIR}/cflParser.cpp COMPILE_FLAGS "-vt --debug")
 flex_target(cflParser cfl.l ${CMAKE_BINARY_DIR}/cflLexer.cpp COMPILE_FLAGS --header-file=${CMAKE_BINARY_DIR}/cflLexer.h)

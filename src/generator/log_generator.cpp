@@ -7,12 +7,12 @@
 
 int main(int argc, char **argv) {
   std::filesystem::path confFile;
-  std::filesystem::path inputFile;
+  std::filesystem::path outputFile;
 
   try {
     auto cli = lyra::cli() |
                lyra::opt(confFile, "conf")["-c"]["--conf"]("config file") |
-               lyra::arg(inputFile, "inputFile")("log file to read");
+               lyra::arg(outputFile, "inputFile")("log file to read");
 
     auto result = cli.parse({argc, argv});
     if (!result) {
@@ -20,24 +20,24 @@ int main(int argc, char **argv) {
       return EXIT_FAILURE;
     }
 
-    if (inputFile.empty()) {
+    if (outputFile.empty()) {
       spdlog::error("usage : ./clfMonitor logfile.log [-c config.json]");
       return EXIT_FAILURE;
     }
 
-    if (!std::filesystem::exists(inputFile) ||
-        !std::filesystem::is_regular_file(inputFile)) {
-      spdlog::error("no such file {}", inputFile.string());
+    if (!std::filesystem::exists(outputFile) ||
+        !std::filesystem::is_regular_file(outputFile)) {
+      spdlog::error("no such file {}", outputFile.string());
       return EXIT_FAILURE;
     }
 
     std::ofstream out;
 
-    out.open(inputFile, std::ios::app);
+    out.open(outputFile, std::ios::app);
 
     if (!out.is_open()) {
       throw std::runtime_error(
-          fmt::format("cannot open {}", inputFile.string()));
+          fmt::format("cannot open {}", outputFile.string()));
     }
 
     std::shared_ptr<Config> cfg = std::make_shared<Config>();

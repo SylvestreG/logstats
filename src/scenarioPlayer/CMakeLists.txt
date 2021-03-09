@@ -1,0 +1,2 @@
+add_executable(scenarioPlayer ${CMAKE_CURRENT_SOURCE_DIR}/scenario.cpp ${CMAKE_CURRENT_SOURCE_DIR}/config.cpp)
+target_link_libraries(scenarioPlayer CONAN_PKG::spdlog CONAN_PKG::lyra CONAN_PKG::nlohmann_json)

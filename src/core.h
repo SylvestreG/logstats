@@ -57,9 +57,6 @@ private:
   // Ui
   clf::Ui _ui;
 
-  // Parser
-  clf::Parser parsers;
-
   // handle data
   boost::asio::thread_pool _handleDataPool;
 };
