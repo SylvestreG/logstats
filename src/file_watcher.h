@@ -40,6 +40,6 @@ private:
   newBufferCb _buffCb;
   int _fd;
 };
-}     // namespace clf
+} // namespace clf
 
 #endif /* __FILE_WATCHER_H__ */

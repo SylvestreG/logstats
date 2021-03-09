@@ -1,10 +1,10 @@
 //
 // Created by sylvestre on 06/03/2021.
 //
+#include <cstring>
 #include <fcntl.h>
 #include <sys/uio.h>
 #include <unistd.h>
-#include <cstring>
 
 #include <libfswatch/c++/event.hpp>
 #include <libfswatch/c++/monitor_factory.hpp>
@@ -12,7 +12,7 @@
 
 #include "file_watcher.h"
 
-//TODO
+// TODO
 // - on file change update the fd...
 clf::FileWatcher::FileWatcher(std::shared_ptr<clf::Config> config,
                               const std::filesystem::path &path)
@@ -20,12 +20,12 @@ clf::FileWatcher::FileWatcher(std::shared_ptr<clf::Config> config,
   std::vector<std::string> paths;
   paths.emplace_back(path.string());
 
-  //open the file
+  // open the file
   _fd = open(path.c_str(), O_NONBLOCK | O_RDONLY | O_APPEND);
   if (_fd <= 0)
     throw std::runtime_error(strerror(errno));
 
-  //go to the end of file
+  // go to the end of file
   if (lseek(_fd, 0, SEEK_END) == (off_t)-1)
     throw std::runtime_error(strerror(errno));
 

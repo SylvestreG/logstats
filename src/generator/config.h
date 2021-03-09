@@ -20,14 +20,14 @@ public:
   std::chrono::milliseconds delayBetweenRequestMs() const noexcept;
 
   // requestStuff
- std::string ipAddr() const noexcept;
- std::string userIdentifier() const noexcept;
- std::string userId() const noexcept;
- boost::beast::http::verb httpVerb() const noexcept;
- std::filesystem::path path() const noexcept;
- std::string httpVersion() const noexcept;
- boost::beast::http::status httpStatus() const noexcept;
- uint32_t size() const noexcept;
+  std::string ipAddr() const noexcept;
+  std::string userIdentifier() const noexcept;
+  std::string userId() const noexcept;
+  boost::beast::http::verb httpVerb() const noexcept;
+  std::filesystem::path path() const noexcept;
+  std::string httpVersion() const noexcept;
+  boost::beast::http::status httpStatus() const noexcept;
+  uint32_t size() const noexcept;
 
 private:
   uint16_t _requestNumber{100};
@@ -42,7 +42,7 @@ private:
   std::string _httpVersion{"HTTP/1.1"};
 
   boost::beast::http::status _status{boost::beast::http::status::ok};
-  uint32_t _size{42};
+  uint32_t _size{420};
 };
 
 #endif /* __CONFIG_H__ */

@@ -1,6 +1,6 @@
 {
-  "requestNumber": 1000,
-  "delayBetweenRequestMs": 1000,
+  "requestNumber": 100,
+  "delayBetweenRequestMs": 100,
   "ipAddr": "127.0.0.1",
   "userIdentifier": "userIdentifier",
   "userId": "syl",
@@ -8,5 +8,5 @@
   "path" : "/api/index.html",
   "httpVersion" :  "HTTP/1.0",
   "httpStatus" : 200,
-  "size" : 42
+  "size" : 42424
 }

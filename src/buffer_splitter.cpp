@@ -126,7 +126,8 @@ std::map<clf::Timepoint, std::string> clf::BufferSplitter::getWorkingMap() {
   return getWorkingMap();
 }
 
-void clf::BufferSplitter::consumeBuffers(std::map<Timepoint, std::string> &&map) {
+void clf::BufferSplitter::consumeBuffers(
+    std::map<Timepoint, std::string> &&map) {
   std::string leftover;
 
   for (auto &entry : map) {

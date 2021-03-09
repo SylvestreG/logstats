@@ -25,7 +25,8 @@ struct BufferResouces {
   std::string _leftover;
 };
 
-using newLineCallBack = std::function<void(std::pair<clf::Timepoint, std::string> &&)>;
+using newLineCallBack =
+    std::function<void(std::pair<clf::Timepoint, std::string> &&)>;
 
 class BufferSplitter {
 public:

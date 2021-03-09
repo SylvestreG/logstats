@@ -1,6 +1,6 @@
 {
   "batchMaxSizeNumber": 100,
-  "batchMaxTimeMs": 100,
+  "alertTimeMs": 2000,
   "bufferSizeBytes": 4096,
   "consumerThreadsNumber": 4,
   "debugEnabled": true,

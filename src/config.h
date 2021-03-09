@@ -25,9 +25,11 @@ public:
   [[nodiscard]] uint16_t alertThresholdNumber() const noexcept;
   [[nodiscard]] uint16_t bufferSizeBytes() const noexcept;
 
+  std::string dumpToJson() const noexcept;
+
 private:
   uint16_t _batchMaxSizeNumber{100};
-  std::chrono::milliseconds _alertTimeMs{2ms};
+  std::chrono::milliseconds _alertTimeMs{2s};
   uint8_t _consumerThreadsNumber{10};
   bool _debugEnabled{false};
   std::chrono::milliseconds _refreshTimeMs{10s};

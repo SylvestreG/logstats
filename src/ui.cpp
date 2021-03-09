@@ -9,9 +9,19 @@
 
 #include "ui.h"
 
-clf::Ui::Ui(clf::Data &d) : _data(d) {}
+clf::Ui::Ui(clf::Data &d) : _data(d), _cfg(d._currentFrameData.cfg()) {}
 
 void clf::Ui::render() {
+
+  auto findNbVerb = [&](boost::beast::http::verb v) -> uint64_t {
+    auto it = _data._globalData.verbMap().find(v);
+
+    if (it == _data._globalData.verbMap().end())
+      return 0;
+
+    return it->second;
+  };
+
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   auto screen = ImTui_ImplNcurses_Init(true);
@@ -24,9 +34,40 @@ void clf::Ui::render() {
 
     ImGui::NewFrame();
 
+    {
+      std::lock_guard<std::mutex> lck(_data._dataMutex);
+      _renderData.totalValidLines = _data._globalData.totalValidLines();
+      _renderData.totalLines = _data._globalData.totalLines();
+      _renderData.nbRequestInTimeframe = _data._globalData.alertTs().size();
+      _renderData.nbGet = findNbVerb(boost::beast::http::verb::get);
+      _renderData.nbPost = findNbVerb(boost::beast::http::verb::post);
+      _renderData.nbPut = findNbVerb(boost::beast::http::verb::put);
+      _renderData.nbPatch = findNbVerb(boost::beast::http::verb::patch);
+      _renderData.nbDelete = findNbVerb(boost::beast::http::verb::delete_);
+      _renderData.nbUnknown = findNbVerb(boost::beast::http::verb::unknown);
+      _renderData._alert = _data._globalData.alertOn();
+      _renderData.nbHits = _data._globalData.hits();
+      _renderData.totalSize = _data._globalData.totalSize();
+
+      _renderData.currentTotalLines = _data._lastFrameFrameData.totalLines();
+      _renderData.currentTotalValidLines =
+          _data._lastFrameFrameData.totalValidLines();
+      _renderData.currentTotalSize = _data._lastFrameFrameData.totalSize();
+
+      _renderData.lastUpdateSec =
+          std::chrono::duration_cast<std::chrono::seconds>(
+              std::chrono::system_clock::now() -
+              _data._currentFrameData.startTime());
+
+      if (_renderData._alert) {
+        std::time_t now_c =
+            std::chrono::system_clock::to_time_t(_data._globalData.startTime());
+        std::tm now_tm = *std::localtime(&now_c);
+        std::strftime(_renderData.timeStr, 80, "%d/%b/%Y:%H:%M:%S %z", &now_tm);
+      }
+    }
     renderGlobalStats();
     renderMonitoringStats();
-    renderAlerts();
     quit = renderMenu();
 
     ImGui::Render();
@@ -37,6 +78,7 @@ void clf::Ui::render() {
   ImTui_ImplText_Shutdown();
   ImTui_ImplNcurses_Shutdown();
 }
+
 bool clf::Ui::renderMenu() {
   std::string s =
       R"foo(     _=,_
@@ -49,11 +91,14 @@ bool clf::Ui::renderMenu() {
       C/ ,--___/)foo";
   bool quit{false};
 
-  ImGui::SetNextWindowPos(ImVec2(120, 30.0), ImGuiCond_Once);
-  ImGui::SetNextWindowSize(ImVec2(20.0, 10.0), ImGuiCond_Once);
+  ImGui::SetNextWindowPos(ImVec2(60, 13.0), ImGuiCond_Once);
+  ImGui::SetNextWindowSize(ImVec2(20.0, 12.0), ImGuiCond_Once);
 
   ImGui::Begin("MENU");
-  ImGui::TextColored(ImVec4(0.5, 0.0, 1.0, 1.0), "%s", s.c_str());
+  if (_renderData._alert)
+    ImGui::TextColored(ImVec4(1.0, 0.1, 0.1, 1.0), "%s", s.c_str());
+  else
+    ImGui::TextColored(ImVec4(0.5, 0.0, 1.0, 1.0), "%s", s.c_str());
   if (ImGui::Button("QUIT")) {
     quit = true;
   }
@@ -63,75 +108,67 @@ bool clf::Ui::renderMenu() {
 }
 
 void clf::Ui::renderGlobalStats() {
-  ImGui::SetNextWindowPos(ImVec2(100, 0), ImGuiCond_Once);
-  ImGui::SetNextWindowSize(ImVec2(60.0, 13.0), ImGuiCond_Once);
-
-  uint64_t nbGet, nbPost, nbPut, nbPatch, nbDelete, nbUnknown;
-  uint64_t totalValidLines;
-  uint64_t totalLines;
-  uint64_t totalSize;
-
-  auto findNbVerb = [&](boost::beast::http::verb v) -> uint64_t {
-    auto it = _data._globalData.verbMap().find(v);
-
-    if (it == _data._globalData.verbMap().end())
-      return 0;
-
-    return it->second;
-  };
-
-  {
-    std::lock_guard<std::mutex> lck(_data._dataMutex);
-    totalValidLines = _data._globalData.totalValidLines();
-    totalLines = _data._globalData.totalLines();
-    totalSize = 0;
-    nbGet = findNbVerb(boost::beast::http::verb::get);
-    nbPost = findNbVerb(boost::beast::http::verb::post);
-    nbPut = findNbVerb(boost::beast::http::verb::put);
-    nbPatch = findNbVerb(boost::beast::http::verb::patch);
-    nbDelete = findNbVerb(boost::beast::http::verb::delete_);
-    nbUnknown = findNbVerb(boost::beast::http::verb::unknown);
-  }
+  ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Once);
+  ImGui::SetNextWindowSize(ImVec2(80.0, 13.0), ImGuiCond_Once);
 
   ImGui::Begin("Global Data");
+  if (_renderData._alert) {
+    ImGui::TextColored(ImVec4(1.00, 0.0, 0.0, 1.0),
+                       "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+                       "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    ImGui::TextColored(
+        ImVec4(1.00, 0.0, 0.0, 1.0),
+        "High traffic generated an alert - hits = {%lu}, triggered at {%s}",
+        _renderData.nbHits, _renderData.timeStr);
+    ImGui::TextColored(ImVec4(1.00, 0.0, 0.0, 1.0),
+                       "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+                       "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+  }
   if (ImGui::BeginTabBar("info", ImGuiTabBarFlags_None)) {
     if (ImGui::BeginTabItem("stats")) {
-      {
-        ImGui::TextColored(
-            ImVec4(0.50, 1.0, 0.8, 1.0), "%s",
-            fmt::format("Valid request {}/{}", totalValidLines, totalLines)
-                .c_str());
-        ImGui::Separator();
-        ImGui::TextColored(ImVec4(0.59, 1.0, 0.8, 1.0), "%s",
-                           fmt::format("total size {}", totalSize).c_str());
-      }
+      ImGui::TextColored(ImVec4(0.50, 1.0, 0.8, 1.0), "%s",
+                         fmt::format("Valid request {}/{}",
+                                     _renderData.totalValidLines,
+                                     _renderData.totalLines)
+                             .c_str());
+      ImGui::Separator();
+      ImGui::TextColored(ImVec4(0.59, 1.0, 0.8, 1.0), "%s",
+                         fmt::format("request in alert timeframe {}",
+                                     _renderData.nbRequestInTimeframe)
+                             .c_str());
+      ImGui::Separator();
+      ImGui::TextColored(
+          ImVec4(0.59, 1.0, 0.8, 1.0), "%s",
+          fmt::format("total size {}", printSize(_renderData.totalSize))
+              .c_str());
       ImGui::EndTabItem();
     }
 
     if (ImGui::BeginTabItem("verbs")) {
-      {
-        ImGui::TextColored(ImVec4(0.50, 1.0, 0.8, 1.0), "%s",
-                           fmt::format("GET ({})", nbGet).c_str());
-        ImGui::Separator();
-        ImGui::TextColored(ImVec4(0.59, 1.0, 0.8, 1.0), "%s",
-                           fmt::format("POST ({})", nbPost).c_str());
-        ImGui::Separator();
-        ImGui::TextColored(ImVec4(0.50, 1.0, 0.8, 1.0), "%s",
-                           fmt::format("PUT ({})", nbPut).c_str());
-        ImGui::Separator();
-        ImGui::TextColored(ImVec4(0.59, 1.0, 0.8, 1.0), "%s",
-                           fmt::format("PATCH ({})", nbPatch).c_str());
-        ImGui::Separator();
-        ImGui::TextColored(ImVec4(0.50, 1.0, 0.8, 1.0), "%s",
-                           fmt::format("DELETE ({})", nbDelete).c_str());
-        ImGui::Separator();
-        ImGui::TextColored(ImVec4(0.59, 1.0, 0.8, 1.0), "%s",
-                           fmt::format("UNKNOWN ({})", nbUnknown).c_str());
-      }
+      ImGui::TextColored(ImVec4(0.50, 1.0, 0.8, 1.0), "%s",
+                         fmt::format("GET ({})", _renderData.nbGet).c_str());
+      ImGui::Separator();
+      ImGui::TextColored(ImVec4(0.59, 1.0, 0.8, 1.0), "%s",
+                         fmt::format("POST ({})", _renderData.nbPost).c_str());
+      ImGui::Separator();
+      ImGui::TextColored(ImVec4(0.50, 1.0, 0.8, 1.0), "%s",
+                         fmt::format("PUT ({})", _renderData.nbPut).c_str());
+      ImGui::Separator();
+      ImGui::TextColored(
+          ImVec4(0.59, 1.0, 0.8, 1.0), "%s",
+          fmt::format("PATCH ({})", _renderData.nbPatch).c_str());
+      ImGui::Separator();
+      ImGui::TextColored(
+          ImVec4(0.50, 1.0, 0.8, 1.0), "%s",
+          fmt::format("DELETE ({})", _renderData.nbDelete).c_str());
+      ImGui::Separator();
+      ImGui::TextColored(
+          ImVec4(0.59, 1.0, 0.8, 1.0), "%s",
+          fmt::format("UNKNOWN ({})", _renderData.nbUnknown).c_str());
 
       ImGui::EndTabItem();
     }
-    if (ImGui::BeginTabItem("stats")) {
+    if (ImGui::BeginTabItem("lines")) {
       {
         std::lock_guard<std::mutex> lck(_data._dataMutex);
 
@@ -139,17 +176,21 @@ void clf::Ui::renderGlobalStats() {
         ImVec4 green{0.0, 1.0, 0.0, 1.0};
         ImVec4 red{1.0, 0.0, 0.0, 1.0};
         for (auto &s : _data._globalData.lastTenLines()) {
+          std::time_t now_c = std::chrono::system_clock::to_time_t(s.first);
+          std::tm now_tm = *std::localtime(&now_c);
+          std::strftime(_renderData.timeStr, 80, "%d/%b/%Y:%H:%M:%S %z",
+                        &now_tm);
           ImGui::TextColored(
               (_data._globalData.lastTenSuccess()[i]) ? green : red, "%s",
-              fmt::format("{} | {}",
-                          std::chrono::duration_cast<std::chrono::seconds>(
-                              s.first - _data._globalData.startTime())
-                              .count(),
-                          s.second)
-                  .c_str());
+              fmt::format("{} | {}", _renderData.timeStr, s.second).c_str());
           i++;
         }
       }
+      ImGui::EndTabItem();
+    }
+
+    if (ImGui::BeginTabItem("config")) {
+      ImGui::Text("%s", _cfg.c_str());
       ImGui::EndTabItem();
     }
   }
@@ -158,20 +199,34 @@ void clf::Ui::renderGlobalStats() {
 }
 
 void clf::Ui::renderMonitoringStats() {
-  ImGui::SetNextWindowPos(ImVec2(0, 12.0), ImGuiCond_Once);
-  ImGui::SetNextWindowSize(ImVec2(60.0, 10.0), ImGuiCond_Once);
+  ImGui::SetNextWindowPos(ImVec2(0, 13.0), ImGuiCond_Once);
+  ImGui::SetNextWindowSize(ImVec2(60.0, 12.0), ImGuiCond_Once);
 
   ImGui::Begin("monitoring");
+  ImGui::Text("%li secs since last refresh", _renderData.lastUpdateSec.count());
   if (ImGui::BeginTabBar("MyTabBar", ImGuiTabBarFlags_None)) {
-    if (ImGui::BeginTabItem("Avocado")) {
-      ImGui::Text("This is the Avocado tab!\nblah blah blah blah blah");
+    if (ImGui::BeginTabItem("stats")) {
+      ImGui::TextColored(ImVec4(0.50, 1.0, 0.8, 1.0), "%s",
+                         fmt::format("Valid request {}/{}",
+                                     _renderData.currentTotalValidLines,
+                                     _renderData.currentTotalLines)
+                             .c_str());
+      ImGui::Separator();
+      ImGui::TextColored(
+          ImVec4(0.59, 1.0, 0.8, 1.0), "%s",
+          fmt::format("total size {}", printSize(_renderData.currentTotalSize))
+              .c_str());
       ImGui::EndTabItem();
     }
-    if (ImGui::BeginTabItem("Broccoli")) {
+    if (ImGui::BeginTabItem("verbs")) {
       ImGui::Text("This is the Broccoli tab!\nblah blah blah blah blah");
       ImGui::EndTabItem();
     }
-    if (ImGui::BeginTabItem("Cucumber")) {
+    if (ImGui::BeginTabItem("status")) {
+      ImGui::Text("This is the Broccoli tab!\nblah blah blah blah blah");
+      ImGui::EndTabItem();
+    }
+    if (ImGui::BeginTabItem("paths")) {
       ImGui::Text("This is the Cucumber tab!\nblah blah blah blah blah");
       ImGui::EndTabItem();
     }
@@ -180,30 +235,33 @@ void clf::Ui::renderMonitoringStats() {
   }
 }
 
-void clf::Ui::renderAlerts() {
-  std::string warn =
-      R"foo(  / \
- / ! \
-|-----|
-)foo";
+std::string clf::Ui::printSize(uint64_t total) {
+  uint16_t tera;
+  uint16_t giga;
+  uint16_t mega;
+  uint16_t kilo;
+  uint16_t oct;
+  std::string result;
 
-  ImGui::SetNextWindowPos(ImVec2(0, 24.0), ImGuiCond_Once);
-  ImGui::SetNextWindowSize(ImVec2(60.0, 10.0), ImGuiCond_Once);
+  tera = total / (1024ull * 1024ull * 1024ull * 1024ull);
+  total = total % (1024ull * 1024ull * 1024ull * 1024ull);
+  giga = total / (1024 * 1024 * 1024);
+  total = total % (1024 * 1024 * 1024);
+  mega = total / (1024 * 1024);
+  total = total % (1024 * 1024);
+  kilo = total / 1024;
+  total = total % (1024);
+  oct = total;
 
-  ImGui::Begin("Alerting");
-  ImGui::TextColored(ImVec4(1.0, 0.0, 0.0, 1.0), "%s", warn.c_str());
-  ImGui::Text("Without border:");
-  ImGui::Columns(3, "mycolumns3", false); // 3-ways, no border
-  ImGui::Separator();
-  for (int n = 0; n < 14; n++) {
-    char label[32];
-    sprintf(label, "Item %d", n);
-    if (ImGui::Selectable(label)) {
-    }
-    // if (ImGui::Button(label, ImVec2(-FLT_MIN,0.0f))) {}
-    ImGui::NextColumn();
-  }
-  ImGui::Columns(1);
-  ImGui::Separator();
-  ImGui::End();
+  if (tera)
+    result.append(fmt::format("{}t", tera));
+  if (giga)
+    result.append(fmt::format("{}g", giga));
+  if (mega)
+    result.append(fmt::format("{}m", mega));
+  if (kilo)
+    result.append(fmt::format("{}k", kilo));
+  result.append(fmt::format("{}", oct));
+
+  return result;
 }

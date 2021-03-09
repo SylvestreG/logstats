@@ -8,9 +8,9 @@
 
 Core::Core(std::shared_ptr<clf::Config> cfg, std::filesystem::path const &path)
     : _config{cfg}, _fileWatcher(cfg, path),
-      _refreshTimer(_ioCtx, cfg->refreshTimeMs()), _alertOffTimer(_ioCtx),
-      _data(cfg), _ui(_data),
-      _handleDataPool(_config->consumerThreadsNumber()) {
+      _refreshTimer(_ioCtx, cfg->refreshTimeMs()),
+      _alertOffTimer(_ioCtx, std::chrono::milliseconds{50}), _data(cfg),
+      _ui(_data), _handleDataPool(_config->consumerThreadsNumber()) {
   _fileWatcher.setNewBufferCallback(
       [&](std::vector<std::pair<clf::Timepoint, std::string>> &&buffers) {
         this->onNewBuffer(std::move(buffers));
@@ -25,6 +25,8 @@ Core::~Core() = default;
 void Core::run() {
   _refreshTimer.async_wait(
       [&](boost::system::error_code const &) { refreshDisplayCallback(); });
+  _alertOffTimer.async_wait(
+      [&](boost::system::error_code const &) { checkAlarmCallback(); });
 
   _splitter.start();
   _fileWatcher.start();
@@ -55,14 +57,28 @@ void Core::onNewBuffer(
 }
 
 void Core::refreshDisplayCallback() {
-  auto ts = std::chrono::system_clock::now();
-  _data._lastFrameFrameData = _data._currentFrameData;
-  _data._currentFrameData = clf::MonitoringData(_config);
-  _data._currentFrameData.startTime() = ts;
+  {
+    std::lock_guard<std::mutex> lck(_data._dataMutex);
+    auto ts = std::chrono::system_clock::now();
+    _data._lastFrameFrameData = _data._currentFrameData;
+    _data._currentFrameData = clf::MonitoringData(_config);
+    _data._currentFrameData.startTime() = ts;
+  }
 
   _refreshTimer.expires_at(_refreshTimer.expiry() + _config->refreshTimeMs());
   _refreshTimer.async_wait(
       [&](boost::system::error_code const &) { refreshDisplayCallback(); });
+}
+
+void Core::checkAlarmCallback() {
+  {
+    std::lock_guard<std::mutex> lck(_data._dataMutex);
+    _data._globalData.checkAlarm();
+  }
+  _alertOffTimer.expires_at(_alertOffTimer.expiry() +
+                            std::chrono::milliseconds(50));
+  _alertOffTimer.async_wait(
+      [&](boost::system::error_code const &) { checkAlarmCallback(); });
 }
 
 void Core::getDataFromSplitter(std::pair<Timepoint, std::string> &&line) {
@@ -74,25 +90,6 @@ void Core::getDataFromSplitter(std::pair<Timepoint, std::string> &&line) {
 
       _data._globalData.newLine(parsedData, {line.first, line.second});
       _data._currentFrameData.newLine(parsedData, line.first);
-
-      // alert need to update timer to starving point
-      // need to take the ts of nbThreshold -1 and add time.
-      if (_data._globalData.alertOn()) {
-        _alertOffTimer.cancel();
-
-        auto alertsTs = _data._globalData.alertTs();
-        auto alertOffTs =
-            alertsTs[alertsTs.size() - (_config->alertThresholdNumber() - 1)] +
-            _config->alertTimeMs();
-
-        _alertOffTimer.expires_after(
-            std::chrono::duration_cast<std::chrono::milliseconds>(
-                alertOffTs - std::chrono::system_clock::now()));
-        _alertOffTimer.async_wait([&](boost::system::error_code const &) {
-          std::lock_guard<std::mutex> lck(_data._dataMutex);
-          _data._globalData.setAlertOff();
-        });
-      }
     }
   });
 }

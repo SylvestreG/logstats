@@ -35,6 +35,7 @@ protected:
 
 private:
   void refreshDisplayCallback();
+  void checkAlarmCallback();
   void getDataFromSplitter(std::pair<Timepoint, std::string> &&line);
 
   // Timers
@@ -59,7 +60,7 @@ private:
   // Parser
   clf::Parser parsers;
 
-  //handle data
+  // handle data
   boost::asio::thread_pool _handleDataPool;
 };
 

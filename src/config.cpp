@@ -4,13 +4,12 @@
 
 #include "config.h"
 #include <fstream>
+#include <generator/config.h>
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 #include <type_traits>
-#include <generator/config.h>
 
-
-clf::Config::Config(const std::filesystem::path& file) {
+clf::Config::Config(const std::filesystem::path &file) {
   std::ifstream ifs(file);
 
   try {
@@ -41,7 +40,7 @@ clf::Config::Config(const std::filesystem::path& file) {
 
     getParam("batchMaxSizeNumber", _batchMaxSizeNumber, 0,
              std::numeric_limits<uint16_t>::max());
-    getParam("batchMaxTimeMs", _alertTimeMs, 0,
+    getParam("alertTimeMs", _alertTimeMs, 0,
              std::numeric_limits<uint16_t>::max());
     getParam("consumerThreadsNumber", _consumerThreadsNumber, 0,
              std::numeric_limits<uint8_t>::max());
@@ -89,4 +88,17 @@ uint16_t clf::Config::alertThresholdNumber() const noexcept {
 
 uint16_t clf::Config::bufferSizeBytes() const noexcept {
   return _bufferSizeBytes;
+}
+
+std::string clf::Config::dumpToJson() const noexcept {
+  nlohmann::json jf;
+  jf["batchMaxSizeNumber"] = _batchMaxSizeNumber;
+  jf["alertTimeMs"] = _alertTimeMs.count();
+  jf["consumerThreadsNumber"] = _consumerThreadsNumber;
+  jf["debugEnabled"] = _debugEnabled;
+  jf["refreshTimeMs"] = _refreshTimeMs.count();
+  jf["alertThresholdNumber"] = _alertThresholdNumber;
+  jf["bufferSizeBytes"] = _bufferSizeBytes;
+
+  return jf.dump();
 }
