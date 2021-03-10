@@ -321,6 +321,9 @@ an api rest. Doing that will allow us to remove the ui from clfMonitor.
 
 # troubleshooting
 
+## Click on ui
+Sometimes on MacOs imtui need double click to understand clicks...
+
 ## black screen
 
 When you have a black screen launching clfMonitor try to launch it like that :
@@ -332,4 +335,4 @@ This will set the good term value that is needed by clfMonitor.
 
 ## build fail
 
-try the docker version
+try the docker version.
