@@ -29,6 +29,8 @@ struct DataRendering {
   uint64_t totalSize;
   uint64_t nbHits;
   bool _alert;
+  bool _lastRecoverOn;
+  char lastRecover[80];
 
   uint64_t currentTotalValidLines;
   uint64_t currentTotalLines;

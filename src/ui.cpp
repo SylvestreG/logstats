@@ -60,6 +60,17 @@ void clf::Ui::render() {
       _renderData.nbHits = _data._globalData.hits();
       _renderData.totalSize = _data._globalData.totalSize();
 
+      if (_data._globalData.lastRecover()) {
+        _renderData._lastRecoverOn = true;
+        std::time_t now_c = std::chrono::system_clock::to_time_t(
+            *_data._globalData.lastRecover());
+        std::tm now_tm = *std::localtime(&now_c);
+        std::strftime(_renderData.lastRecover, 80, "%d/%b/%Y:%H:%M:%S %z",
+                      &now_tm);
+      } else {
+        _renderData._lastRecoverOn = false;
+      }
+
       _renderData.currentTotalLines = _data._lastFrameFrameData.totalLines();
       _renderData.currentTotalValidLines =
           _data._lastFrameFrameData.totalValidLines();
@@ -134,6 +145,16 @@ void clf::Ui::renderGlobalStats() {
             _renderData.nbHits, _renderData.timeStr)
             .c_str());
     ImGui::TextColored(ImVec4(1.00, 0.0, 0.0, 1.0),
+                       "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+                       "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+  } else if (_renderData._lastRecoverOn) {
+    ImGui::TextColored(ImVec4(0.00, 1.0, 0.0, 1.0),
+                       "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+                       "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    ImGui::TextColored(
+        ImVec4(0.00, 1.0, 0.0, 1.0), "%s",
+        fmt::format("Alert recovered at {}", _renderData.lastRecover).c_str());
+    ImGui::TextColored(ImVec4(0.00, 1.0, 0.0, 1.0),
                        "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
                        "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
   }

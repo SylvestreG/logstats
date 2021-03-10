@@ -83,6 +83,7 @@ public:
   std::deque<std::pair<Timepoint, std::string>> &lastTenLines();
   std::deque<bool> &lastTenSuccess();
   std::vector<Timepoint> &alertTs();
+  std::optional<Timepoint> lastRecover();
   bool alertOn() const;
   void checkAlarm();
   uint64_t hits() const;
@@ -91,6 +92,7 @@ private:
   std::deque<std::pair<Timepoint, std::string>> _lastTenLines;
   std::deque<bool> _lastTenSuccess;
 
+  std::optional<Timepoint> _lastRecover;
   std::vector<Timepoint> _alertTs;
   bool _alertOn;
   uint64_t _hits;

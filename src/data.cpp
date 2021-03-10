@@ -133,7 +133,7 @@ uint64_t clf::MonitoringData::totalSize() const { return _totalSize; }
 
 clf::GlobalMonitoringData::GlobalMonitoringData(
     std::shared_ptr<clf::Config> cfg)
-    : MonitoringData(cfg), _alertOn{false} {}
+    : MonitoringData(cfg), _alertOn{false}, _lastRecover(std::nullopt) {}
 
 deque<std::pair<clf::Timepoint, std::string>> &
 clf::GlobalMonitoringData::lastTenLines() {
@@ -199,11 +199,17 @@ void clf::GlobalMonitoringData::checkAlarm() {
       _startTime = _alertTs.front();
     _alertOn = true;
   } else {
+    if (_alertOn) {
+      _lastRecover = std::chrono::system_clock::now();
+    }
     _alertOn = false;
     _hits = 0;
   };
 }
 uint64_t clf::GlobalMonitoringData::hits() const { return _hits; }
+optional<clf::Timepoint> clf::GlobalMonitoringData::lastRecover() {
+  return _lastRecover;
+}
 
 clf::Data::Data(std::shared_ptr<clf::Config> cfg)
     : _globalData(cfg), _currentFrameData(cfg), _lastFrameFrameData(cfg) {}
