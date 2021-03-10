@@ -13,6 +13,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+#include <cstdio>
 #include <filesystem>
 #include <fstream>
 #include <lyra/lyra.hpp>
@@ -57,20 +58,14 @@ int main(int argc, char **argv) {
       return EXIT_FAILURE;
     }
 
-    std::ofstream out;
+    int out;
     std::ifstream in;
 
-    out.open(outputFile, std::ios::app);
     in.open(inputFile);
-
-    if (!out.is_open()) {
-      throw std::runtime_error(
-          fmt::format("cannot open {}", outputFile.string()));
-    }
 
     if (!in.is_open()) {
       throw std::runtime_error(
-          fmt::format("cannot open {}", outputFile.string()));
+          fmt::format("cannot open {}", inputFile.string()));
     }
 
     std::shared_ptr<Config> cfg = std::make_shared<Config>();
@@ -85,7 +80,15 @@ int main(int argc, char **argv) {
         if (!std::getline(in, line))
           return EXIT_SUCCESS;
         spdlog::info("found {}", line);
-        out << line << std::endl;
+        line.append("\n");
+        out = open(outputFile.c_str(), O_APPEND | O_WRONLY);
+        if (out <= 0) {
+          throw std::runtime_error(
+              fmt::format("cannot open {}", outputFile.string()));
+        }
+
+        write(out, line.c_str(), line.size());
+        close(out);
         std::this_thread::sleep_for(s.second);
       }
     }

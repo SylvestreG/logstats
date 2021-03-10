@@ -128,9 +128,11 @@ void clf::Ui::renderGlobalStats() {
                        "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
                        "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     ImGui::TextColored(
-        ImVec4(1.00, 0.0, 0.0, 1.0),
-        "High traffic generated an alert - hits = {%lu}, triggered at {%s}",
-        _renderData.nbHits, _renderData.timeStr);
+        ImVec4(1.00, 0.0, 0.0, 1.0), "%s",
+        fmt::format(
+            "High traffic generated an alert - hits = {}, triggered at {}",
+            _renderData.nbHits, _renderData.timeStr)
+            .c_str());
     ImGui::TextColored(ImVec4(1.00, 0.0, 0.0, 1.0),
                        "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
                        "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
@@ -214,7 +216,9 @@ void clf::Ui::renderMonitoringStats() {
   ImGui::SetNextWindowSize(ImVec2(60.0, 12.0), ImGuiCond_Once);
 
   ImGui::Begin("monitoring");
-  ImGui::Text("%li secs since last refresh", _renderData.lastUpdateSec.count());
+  ImGui::Text("%s", fmt::format("{} secs since last refresh",
+                                _renderData.lastUpdateSec.count())
+                        .c_str());
   if (ImGui::BeginTabBar("MyTabBar", ImGuiTabBarFlags_None)) {
     if (ImGui::BeginTabItem("stats")) {
       ImGui::TextColored(ImVec4(0.50, 1.0, 0.8, 1.0), "%s",
@@ -234,9 +238,12 @@ void clf::Ui::renderMonitoringStats() {
       for (auto it = _data._lastFrameFrameData.orderedVerbMap().rbegin();
            it != _data._lastFrameFrameData.orderedVerbMap().rend(); ++it)
         ImGui::Text(
-            "%s (%lu)",
-            boost::beast::http::to_string(it->second).to_string().c_str(),
-            it->first);
+            "%s",
+            fmt::format(
+                "{} ({})",
+                boost::beast::http::to_string(it->second).to_string().c_str(),
+                it->first)
+                .c_str());
 
       ImGui::EndTabItem();
     }
@@ -244,16 +251,21 @@ void clf::Ui::renderMonitoringStats() {
       std::lock_guard<std::mutex> lck(_data._dataMutex);
       for (auto it = _data._lastFrameFrameData.orderedStatusMap().rbegin();
            it != _data._lastFrameFrameData.orderedStatusMap().rend(); ++it)
-        ImGui::Text(
-            "%s (%lu)",
-            boost::beast::http::obsolete_reason(it->second).to_string().c_str(),
-            it->first);
+        ImGui::Text("%s",
+                    fmt::format("{} ({})",
+                                boost::beast::http::obsolete_reason(it->second)
+                                    .to_string()
+                                    .c_str(),
+                                it->first)
+                        .c_str());
       ImGui::EndTabItem();
     }
     if (ImGui::BeginTabItem("paths")) {
       for (auto it = _data._lastFrameFrameData.orderedPathMap().rbegin();
            it != _data._lastFrameFrameData.orderedPathMap().rend(); ++it)
-        ImGui::Text("%s (%lu)", it->second.c_str(), it->first);
+        ImGui::Text(
+            "%s",
+            fmt::format("{} ({})", it->second.c_str(), it->first).c_str());
       ImGui::EndTabItem();
     }
     ImGui::EndTabBar();

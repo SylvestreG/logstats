@@ -20,6 +20,7 @@
 #include <deque>
 #include <mutex>
 #include <set>
+#include <unordered_map>
 
 #include "config.h"
 #include "parser.h"
