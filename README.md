@@ -31,7 +31,8 @@ For the moment I only try on ArchLinux. Here is an list of dependencies needed.
 * a good terminal like Tilix
     * ```pacman -S tilix``` on ArchLinux
     * ```apt-get install tilix``` on debian-like
-* bison/flex/m4 can be necessary on debian to build on debian
+* bison/flex/m4 can be necessary on linux
+    * ```pacman -S bison flex m4``` on ArchLinux
     * ```apt-get install bison flex m4``` on debian-like
 
 ## how to build
@@ -58,6 +59,31 @@ finish you can build the project using make:
 ```bash
 make -j
 ```
+
+### cheating using docker ###
+
+Go to the project root dir and do :
+```bash
+docker build -t clf .
+```
+
+this will create a docker image containing the build of the differents binaries.
+
+to launch them you will need to map the directory containing you files in the same path on the docker images.
+
+if you want to launch clfMonitor with a file from /tmp do :
+
+```bash
+docker run -v /tmp:/tmp -it arch /usr/bin/bash -c "TERM=xterm-256color clfMonitor /tmp/toto"
+```
+
+and if you want to launch a scenarioPlayer do :
+
+```bash
+docker run -v /tmp:/tmp -it arch /usr/bin/bash -c "TERM=xterm-256color scenarioPlayer -o /tmp/toto -i /tmp/access.log -c /tmp/scenarioConfig.json"
+```
+
+Beware all the file you need (config/input/output) must be in the directory mounted by your volume (here ```/tmp```).
 
 ### build errors on debian ###
 

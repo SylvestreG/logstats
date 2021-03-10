@@ -1,0 +1,14 @@
+[generators]
+cmake
+
+[requires]
+boost/1.75.0
+fswatch/1.14.0@bincrafters/stable
+gtest/1.10.0
+lyra/1.5.1
+nlohmann_json/3.9.1
+spdlog/1.7.0
+
+[options]
+spdlog:header_only=True
+boost:header_only=True

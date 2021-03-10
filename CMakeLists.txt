@@ -21,6 +21,9 @@ if(USE_SYSTEM_BISON)
                              boost:header_only=True
                              BASIC_SETUP    CMAKE_TARGETS
                              BUILD          missing)
+elseif(USE_DOCKER_BUILD)
+	include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+	conan_basic_setup(TARGETS)
 else()
     conan_cmake_run(REQUIRES bison/3.7.1
                              boost/1.75.0
