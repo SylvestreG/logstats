@@ -17,7 +17,6 @@
 #define __PARSER_H__
 
 #include <chrono>
-#include <filesystem>
 #include <memory>
 #include <optional>
 #include <string_view>
@@ -50,7 +49,7 @@ struct ClfLine {
   optional<string> userId;
   optional<string> timestamp;
   optional<boost::beast::http::verb> verb;
-  optional<std::filesystem::path> path;
+  optional<std::string> path;
   optional<httpVersion> version;
   optional<boost::beast::http::status> statusCode;
   optional<std::size_t> objectSize;

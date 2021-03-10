@@ -42,6 +42,22 @@ void clf::Parser::onRequest(boost::beast::http::verb request, std::string *path,
   _currentLine.verb = request;
   _currentLine.path = *path;
   _currentLine.version = version;
+
+  l->info("p = {}", *_currentLine.path);
+
+  if (_currentLine.path->size() > 1) {
+    auto secondSlash = _currentLine.path->find('/', 1);
+    if (secondSlash != std::string::npos)
+      _currentLine.path->erase(_currentLine.path->begin() + secondSlash,
+                               _currentLine.path->end());
+  }
+
+  if (_currentLine.path->find("?") != std::string::npos)
+    _currentLine.path = "/";
+
+  if (_currentLine.path->find(".") != std::string::npos)
+    _currentLine.path = "/";
+
   delete path;
 }
 
