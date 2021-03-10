@@ -1,5 +1,4 @@
 {
-  "batchMaxSizeNumber": 100,
   "alertTimeMs": 5000,
   "bufferSizeBytes": 4096,
   "consumerThreadsNumber": 4,

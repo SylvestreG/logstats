@@ -21,7 +21,6 @@ TEST(config, defaultVal) {
   clf::Config cfg;
 
   ASSERT_EQ(cfg.alertThresholdNumber(), 10);
-  ASSERT_EQ(cfg.batchMaxSizeNumber(), 100);
   ASSERT_EQ(cfg.alertTimeMs(), 2s);
   ASSERT_EQ(cfg.debugEnabled(), false);
   ASSERT_EQ(cfg.refreshTimeMs(), 10s);
@@ -39,11 +38,10 @@ TEST(config, goodConfig) {
   std::ofstream ofs;
   ofs.open(path);
   ofs << R"foo({
-  "batchMaxSizeNumber": 1,
-  "alertTimeMs": 1,
+  "alertTimeMs": 1000,
   "consumerThreadsNumber": 1,
   "debugEnabled": false,
-  "refreshTimeMs": 1,
+  "refreshTimeMs": 1000,
   "alertThresholdNumber" : 1,
   "bufferSizeBytes": 1
 }
@@ -55,10 +53,9 @@ TEST(config, goodConfig) {
   std::filesystem::remove(path);
 
   ASSERT_EQ(cfg.alertThresholdNumber(), 1);
-  ASSERT_EQ(cfg.batchMaxSizeNumber(), 1);
   ASSERT_EQ(cfg.debugEnabled(), false);
   ASSERT_EQ(cfg.consumerThreadsNumber(), 1);
-  ASSERT_EQ(cfg.bufferSizeBytes(), 1);
-  ASSERT_EQ(cfg.refreshTimeMs().count(), (1ms).count());
-  ASSERT_EQ(cfg.alertTimeMs().count(), (1ms).count());
+  ASSERT_EQ(cfg.bufferSizeBytes(), 4096);
+  ASSERT_EQ(cfg.refreshTimeMs().count(), (1000ms).count());
+  ASSERT_EQ(cfg.alertTimeMs().count(), (1000ms).count());
 }

@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
     }
 
     if (outputFile.empty()) {
-      spdlog::error("usage : ./clfMonitor logfile.log [-c config.json]");
+      spdlog::error("usage : ./clfGenerator logfile.log [-c config.json]");
       return EXIT_FAILURE;
     }
 

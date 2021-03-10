@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
 
     if (outputFile.empty() || inputFile.empty()) {
       spdlog::error(
-          "usage : ./clfMonitor -i input.log -o output.log [-c config.json]");
+          "usage : ./scenarioPlayer -i input.log -o output.log [-c config.json]");
       return EXIT_FAILURE;
     }
 

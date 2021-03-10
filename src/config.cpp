@@ -49,17 +49,15 @@ clf::Config::Config(const std::filesystem::path &file) {
       }
     };
 
-    getParam("batchMaxSizeNumber", _batchMaxSizeNumber, 0,
+    getParam("alertTimeMs", _alertTimeMs, 500,
              std::numeric_limits<uint16_t>::max());
-    getParam("alertTimeMs", _alertTimeMs, 0,
-             std::numeric_limits<uint16_t>::max());
-    getParam("consumerThreadsNumber", _consumerThreadsNumber, 0,
+    getParam("consumerThreadsNumber", _consumerThreadsNumber, 1,
              std::numeric_limits<uint8_t>::max());
-    getParam("refreshTimeMs", _refreshTimeMs, 0,
+    getParam("refreshTimeMs", _refreshTimeMs, 1000,
              std::numeric_limits<uint16_t>::max());
-    getParam("alertThresholdNumber", _alertThresholdNumber, 0,
+    getParam("alertThresholdNumber", _alertThresholdNumber, 1,
              std::numeric_limits<uint16_t>::max());
-    getParam("bufferSizeBytes", _bufferSizeBytes, 0,
+    getParam("bufferSizeBytes", _bufferSizeBytes, 100,
              std::numeric_limits<uint16_t>::max());
 
     if (jf["debugEnabled"].is_boolean())
@@ -73,10 +71,6 @@ clf::Config::Config(const std::filesystem::path &file) {
       spdlog::error("parse pb: {} ", ex.what());
     throw ex;
   }
-}
-
-uint16_t clf::Config::batchMaxSizeNumber() const noexcept {
-  return _batchMaxSizeNumber;
 }
 
 std::chrono::milliseconds clf::Config::alertTimeMs() const noexcept {
@@ -103,7 +97,6 @@ uint16_t clf::Config::bufferSizeBytes() const noexcept {
 
 std::string clf::Config::dumpToJson() const noexcept {
   nlohmann::json jf;
-  jf["batchMaxSizeNumber"] = _batchMaxSizeNumber;
   jf["alertTimeMs"] = _alertTimeMs.count();
   jf["consumerThreadsNumber"] = _consumerThreadsNumber;
   jf["debugEnabled"] = _debugEnabled;
