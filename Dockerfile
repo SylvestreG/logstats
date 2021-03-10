@@ -1,9 +1,9 @@
-FROM archlinux:latest
+FROM debian:unstable
 
-RUN /bin/bash -c "pacman -Syu --noconfirm make cmake gcc python-pip m4 bison flex && \
+RUN apt-get update -y && apt-get install -y make cmake g++ build-essential libncurses-dev python3-pip m4 bison flex && \
 		pip3 install conan && \
 		conan profile new default --detect && \
-		conan profile update settings.compiler.libcxx=libstdc++11 default"
+		conan profile update settings.compiler.libcxx=libstdc++11 default
 
 COPY . /work/
 

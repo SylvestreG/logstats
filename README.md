@@ -11,10 +11,17 @@ You need this dependencies for building on MacOsX :
 * cmake
     * ```brew install cmake``` if you are using brew
 * a decent C compiler. Clang must comes with XCode, if you do not have XCode install it from the App Store.
-* make
-    * ```brew instal make```
+* make/automake/autoconf
+    * ```brew instal make automake autoconf```
 * a good terminal like iterm2
     * ```brew instal --cask iterm2```
+* bison/flex/m4/gettext
+    * ```brew install bison flex m4 gettext```
+    * **follow** instruction from brew to update your path ``` bison --version```
+        should be greater than 3.0. Macos ship with an old bison.
+    * for me a path update was ```export PATH="/usr/local/opt/bison/bin:$PATH"``` and ```export PATH="/usr/local/opt/flex/bin:$PATH"```
+
+if You already have these packages update them to a recent version
 
 ### Linux
 
@@ -74,30 +81,23 @@ to launch them you will need to map the directory containing you files in the sa
 if you want to launch clfMonitor with a file from /tmp do :
 
 ```bash
-docker run -v /tmp:/tmp -it clf /usr/bin/bash -c "TERM=xterm-256color clfMonitor /tmp/toto"
+docker run -v /tmp:/tmp -it clf /bin/bash -c "TERM=xterm-256color clfMonitor /tmp/toto"
 ```
 
 and if you want to launch a scenarioPlayer do :
 
 ```bash
-docker run -v /tmp:/tmp -it clf /usr/bin/bash -c "TERM=xterm-256color scenarioPlayer -o /tmp/toto -i /tmp/access.log -c /tmp/scenarioConfig.json"
+cp -fr conf/* /tmp/.
+cp -fr data/* /tmp/.
+docker run -v /tmp:/tmp -it clf /bin/bash -c "TERM=xterm-256color scenarioPlayer -o /tmp/toto -i /tmp/access.log -c /tmp/scenarioConfig.json"
 ```
 
 Beware all the file you need (config/input/output) must be in the directory mounted by your volume (here ```/tmp```).
 
-### build errors on some linux ###
+### build errors ###
 
-On some linux you can have some build errors on m4/flex/bison. for that install
-bison/flex/m4, remove your build directory and restart the build process, except replace :
-
-```bash
-cmake ..
-```
-
-by
-
-```bash
-cmake -DUSE_SYSTEM_BISON=ON ..
+If you launch a build with a bad version of bison on your path, you will have a build error.
+To fix it update your path, remove your build folder and restart the build.
 ```
 
 ## What are the different binaries
