@@ -46,14 +46,7 @@ int main(int argc, char **argv) {
       return EXIT_FAILURE;
     }
 
-    std::ofstream out;
-
-    out.open(outputFile, std::ios::app);
-
-    if (!out.is_open()) {
-      throw std::runtime_error(
-          fmt::format("cannot open {}", outputFile.string()));
-    }
+    int out;
 
     std::shared_ptr<Config> cfg = std::make_shared<Config>();
     if (confFile.empty())
@@ -76,8 +69,16 @@ int main(int argc, char **argv) {
       std::time_t now_c = std::chrono::system_clock::to_time_t(now);
       std::tm now_tm = *std::localtime(&now_c);
       std::strftime(buffer, 80, "%d/%b/%Y:%H:%M:%S %z", &now_tm);
-      out << fmt::format(output, buffer) << std::endl;
+      std::string line = fmt::format(output, buffer);
+      line.append("\n");
+      out = open(outputFile.c_str(), O_APPEND | O_WRONLY);
+      if (out <= 0) {
+        throw std::runtime_error(
+            fmt::format("cannot open {}", outputFile.string()));
+      }
 
+      write(out, line.c_str(), line.size());
+      close(out);
       std::this_thread::sleep_for(cfg->delayBetweenRequestMs());
     }
   } catch (std::exception const &ex) {
