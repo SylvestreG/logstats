@@ -22,10 +22,10 @@ TEST(config, defaultVal) {
 
   ASSERT_EQ(cfg.alertThresholdNumber(), 10);
   ASSERT_EQ(cfg.batchMaxSizeNumber(), 100);
-  ASSERT_EQ(cfg.alertTimeMs(), 100ms);
-  ASSERT_EQ(cfg.debugEnabled(), true);
+  ASSERT_EQ(cfg.alertTimeMs(), 2s);
+  ASSERT_EQ(cfg.debugEnabled(), false);
   ASSERT_EQ(cfg.refreshTimeMs(), 10s);
-  ASSERT_EQ(cfg.consumerThreadsNumber(), 4);
+  ASSERT_EQ(cfg.consumerThreadsNumber(), 10);
   ASSERT_EQ(cfg.bufferSizeBytes(), 4096);
 }
 
@@ -40,7 +40,7 @@ TEST(config, goodConfig) {
   ofs.open(path);
   ofs << R"foo({
   "batchMaxSizeNumber": 1,
-  "batchMaxTimeMs": 1,
+  "alertTimeMs": 1,
   "consumerThreadsNumber": 1,
   "debugEnabled": false,
   "refreshTimeMs": 1,
